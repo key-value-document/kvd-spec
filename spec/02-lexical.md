@@ -1,0 +1,80 @@
+[KVD spec](../README.md) — section 02
+
+## 2. Lexical rules
+
+### Encoding and line endings
+
+- UTF-8 only. A BOM is an error.
+- CRLF is normalized to LF before parsing; a lone `CR` is an error.
+- The last line may omit its terminating newline.
+
+### Indentation
+
+- Spaces only, exactly 2 per level. Any other count is an error.
+- A tab anywhere outside a double-quoted string or `"""` block is an error.
+- Blank lines are allowed anywhere between tokens and carry no indent
+  semantics. Trailing whitespace on any line is ignored.
+
+### Comments
+
+- `#` to end of line, allowed anywhere except inside a quoted string.
+- There are no block comments.
+
+### Newlines and structure
+
+- Newlines are structural: they terminate lines and drive INDENT/DEDENT.
+  Values never span lines except inside quoted strings (`\n` escape) and
+  `"""` blocks ([§4](04-grammar.md)).
+
+### Strings
+
+- String values are always double-quoted: `"..."` for a single line,
+  `"""..."""` for multiple lines ([§4](04-grammar.md)).
+- Non-ASCII characters in strings may be written literally or escaped as
+  `\uXXXX` (Unicode code points U+0000–U+FFFF). Code points above U+FFFF
+  must be written literally as UTF-8; there is no surrogate-pair escape.
+
+### Numbers
+
+- A leading `+` or `-` followed by a digit starts a number (`+5`, `-5.5`).
+  Any other use of `+` or `-` as a value token is an error.
+- A token beginning with a digit must match the `int` or `float` grammar
+  exactly — partial matches (`5foo`, `1_2`, `00`, `1_000.5`) are errors.
+- Thousands separators: `_` groups exactly 3 digits after the first 1–3
+  digits (`1_000`, `45_678_112`); any other grouping is an error.
+  Thousands separators are allowed only in integers, not in floats.
+
+### Keys
+
+- Keys are restricted to ASCII alphanumerics plus `-` and `_`, must not
+  start or end with `-` or `_`, and may start with a digit (`8080`, `2fa`).
+- Keys are always bare. Quoting a key is an error.
+- Dots are path separators, not key characters — a key can never contain a dot.
+
+### Metakeys
+
+- A key matching `__name__` (double underscores, a lowercase letter, then
+  lowercase letters/digits/`-`/`_`, double underscores) is a metakey.
+- Metakeys are reserved and allowed only at the document root. The only
+  defined metakey is `__schema__` ([§4](04-grammar.md)), which is retained
+  in the root map ([§8.1](08-operations.md)) but excluded from verification
+  ([§8.3](08-operations.md)). Any other metakey is an error.
+
+### Separators and markers
+
+- The `:` separator is followed by exactly one space when the value is on the
+  same line (`key: "value"`, `key: {}`, `key: """`). `key:value` is an error.
+  When the value is an indented subtree, `:` is followed immediately by
+  end of line.
+- List marker: `- ` (dash + exactly one space), sitting at the parent key's
+  indent + 2. A `-` alone at end of line introduces a nested list item
+  ([§4](04-grammar.md)). Any other standalone `-` is an error.
+
+### Empty collections and limits
+
+- `{}` is an empty mapping; `[]` is an empty list. They are atomic tokens —
+  `{`, `}`, `[`, `]` may not appear in any other context.
+- An empty document (or a comments-only document) parses as an empty mapping.
+- Max nesting depth: 100 (configurable), counting indent levels and dotted
+  path segments together. There are no aliases, so there is no
+  billion-laughs class.
