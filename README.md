@@ -1,9 +1,7 @@
 # KVD — Key-Value Document format
 
 Name: **kvd**. Status: 1.0.
-Goal: a general-purpose, opinionated config/data format that keeps YAML's
-readability without its pitfalls, and is small enough to implement in ~200
-lines of parser plus error handling.
+Goal: a general-purpose, opinionated human-readable config/data format that is small enough to implement in ~200 lines of parser plus error handling.
 
 Versioning: the format follows SemVer. Any change that makes a previously
 valid document invalid, or changes the shape of a value, bumps the major
