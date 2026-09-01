@@ -1,4 +1,4 @@
-[KVD spec](../README.md) — section 09
+[KVD spec](../README.md), section 09
 
 ## 9. Non-goals
 
@@ -19,13 +19,13 @@ in any future version of KVD.
 - **Flow collections** (`{...}`, `[...]` as inline maps/lists). The only
   uses of `{}` and `[]` are the empty-collection literals.
 - **Implicit coercion**. `yes`, `on`, `2026-08-20`, `0x1f`, `0o17`,
-  `1_000.5` are always errors — the value set is closed and explicit.
+  `1_000.5` are always errors. The value set is closed and explicit.
 - **Block scalars** other than `"""` (`|`, `|-`, `>`, `>-`). The `"""`
   form covers all multi-line string needs.
 
 ### Other features
 
-- **Custom types**. The builtin type set (`int`, `float`, `bool`, `str`)
+- **Custom types**. The builtin type set (`int`, `float`, `bool`, `str`, `list`, `map`)
   is closed. There are no user-defined or pluggable types.
 - **Single-quoted strings**. Double-quote is the only string delimiter.
 - **Inline annotations**. Types, comments, and metadata are never mixed

@@ -1,8 +1,8 @@
-[KVD spec](../README.md) — section 04
+[KVD spec](../README.md), section 04
 
 ## 4. Grammar (EBNF)
 
-`:=` is EBNF's definition operator — meta-syntax, not part of the format.
+`:=` is EBNF's definition operator. It is meta-syntax, not part of the format.
 
 ```
 document  := pairs? EOF
@@ -66,7 +66,7 @@ The builtin type names are `int`, `float`, `bool`, `str`, `list`, `map`;
 `list` and `map` appear only inside a descriptor's `type` key (they make a
 container optional/validatable). numbers, booleans, `null`, and quoted
 strings are errors in schema position. A type name is written bare;
-optionality is declared with `optional: true` in a descriptor block — see
+optionality is declared with `optional: true` in a descriptor block. See
 [§5](05-values.md).
 
 Metakeys are excluded from the data tree before verification, so an embedded
@@ -111,7 +111,7 @@ key: """
 """
 ```
 
-Two closer forms — the position of `"""` controls whether a trailing newline
+Two closer forms exist. The position of `"""` controls whether a trailing newline
 is included:
 
 - **Standalone closer**: `"""` alone on a line at exactly the key's column.
@@ -120,7 +120,7 @@ is included:
   No trailing `\n` is added.
 
 ```
-# standalone — value is "line one\nline two\n"
+# standalone: value is "line one\nline two\n"
 standalone: """
   line one
   line two
@@ -128,7 +128,7 @@ standalone: """
 ```
 
 ```
-# inline — value is "line one\nline two"
+# inline: value is "line one\nline two"
 inline: """
   line one
   line two"""

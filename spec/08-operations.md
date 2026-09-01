@@ -1,4 +1,4 @@
-[KVD spec](../README.md) — section 08
+[KVD spec](../README.md), section 08
 
 ## 8. Operations
 
@@ -8,9 +8,9 @@ previous one.
 
 ### 8.1 Parse
 
-**Input:** UTF-8 text.  
-**Output:** a document — a root mapping node whose values are scalars, nested
-mappings, or lists (§4).  
+**Input:** UTF-8 text.
+**Output:** a document that is a root mapping node whose values are scalars, nested
+mappings, or lists (§4).
 **Errors:** parse errors carrying a `line:col` position and a category from
 §6. A document with any parse error has no defined value.
 
@@ -27,17 +27,17 @@ KVD text that parses back to an equal tree.
 
 ### 8.2 Emit
 
-**Input:** a document node tree.  
-**Output:** canonical KVD text.  
-**Errors:** only if a map key cannot be represented as a valid KVD key (e.g.
+**Input:** a document node tree.
+**Output:** canonical KVD text.
+**Errors:** only if a map key cannot be represented as a valid KVD key (for example
 empty string).
 
 Canonical form rules:
 
 - All string scalars are double-quoted, except the six builtin type names
-  (`int`, `float`, `bool`, `str`, `list`, `map`), which stay bare — they are
+  (`int`, `float`, `bool`, `str`, `list`, `map`), which stay bare. They are
   meaningful only in schema position (§5). A data string whose text equals one
-  of these names is therefore also emitted bare, but re-parses to an equal
+  of these names is therefore also emitted bare, but it re-parses to an equal
   `Str` scalar, so the value round-trips.
 - Multi-line strings use `"""` blocks.
 - Keys are unquoted when they satisfy the key grammar (§3), quoted otherwise.
@@ -52,14 +52,14 @@ invariant: `emit(parse(text))` equals `emit(parse(emit(parse(text))))`.
 ### 8.3 Verify
 
 **Input:** a document node tree and a schema node tree (both produced by
-parse).  
+parse).
 **Output:** success, or a non-empty list of violations. Each violation carries
-the dotted path of the offending node and a human-readable message (§6).  
+the dotted path of the offending node and a human-readable message (§6).
 **Errors:** `verify` returns `VerifyError`. When either input fails to parse
-it is `ParseDoc` / `ParseSchema`. Once both parse, a *malformed schema* (e.g. a
+it is `ParseDoc` / `ParseSchema`. Once both parse, a *malformed schema* (for example a
 quoted or numbered type leaf, a bare `list`/`map` leaf, a descriptor missing its
-`type`, or an unknown type name) is reported as `VerifyError::SchemaMalformed` —
-distinct from `VerifyError::Violations`, which covers a well-formed schema
+`type`, or an unknown type name) is reported as `VerifyError::SchemaMalformed`.
+This is distinct from `VerifyError::Violations`, which covers a well-formed schema
 applied to a non-conforming document. A self-describing document can be checked
 against its own `__schema__` entry with `verify_embedded` (spec §8.1).
 
@@ -72,18 +72,20 @@ The verifier walks the schema tree and for every path checks:
 - All required schema keys are present in the data.
 - Each scalar's shape matches its declared builtin type.
 - `null` only appears under an optional type (`optional: true`).
+- Each present value satisfies its `validation` constraints, if any
+  ([§10](10-validation.md)); `null`/absent values skip constraint checks.
 
 ### 8.4 Typed round-trip (serde)
 
-**Input (deserialize):** KVD text and a target type `T`.  
-**Output:** a value of type `T`.  
-**Input (serialize):** a value of type `T`.  
+**Input (deserialize):** KVD text and a target type `T`.
+**Output:** a value of type `T`.
+**Input (serialize):** a value of type `T`.
 **Output:** canonical KVD text.
 
 This operation is composed from the primitives above: serialize builds a node
 tree from `T`, then emits it; deserialize parses the text into a node tree,
-then maps it onto `T`. Shape enforcement is strict — no coercion between
-shapes (e.g. an integer field rejects a quoted-string value).
+then maps it onto `T`. Shape enforcement is strict and allows no coercion between
+shapes (for example an integer field rejects a quoted-string value).
 
 This operation is optional for implementations that do not support a type
 system or reflection layer.
@@ -136,10 +138,10 @@ malformed path (`BadPath`), a missing map key (`MissingKey`), an out-of-range
 list index (`IndexOutOfBounds`), or a node of the wrong shape where a map or
 list was required (`NotAMap` / `NotAList`).
 
-#### Document merging — deferred to §11
+#### Document merging: deferred to §11
 
 Merging two documents is **out of scope for 1.0**. The design is specified in
-[§11](spec/11-merge.md) (planned): the merge policy is declared **per field in
+[§11](spec/11-merge.md) (planned): the merge policy is declared **per-field in
 the schema** (not passed as a parameter), with strategies `replace`, `deep`,
 `append`, `union`, and `by-key`, and a safe default of `replace`. Until then,
 `set` (which replaces a target node wholesale) is the only write primitive.

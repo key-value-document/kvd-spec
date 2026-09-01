@@ -1,4 +1,4 @@
-[KVD spec](../README.md) — section 07
+[KVD spec](../README.md), section 07
 
 ## 7. Full example
 
@@ -36,7 +36,7 @@ tls:
   """
 ```
 
-Schema (`app.schema.kvd`) — a bare tree whose values are builtin types:
+Schema (`app.schema.kvd`): a bare tree whose values are builtin types:
 
 ```
 app:

@@ -1,4 +1,4 @@
-[KVD spec](../README.md) — section 03
+[KVD spec](../README.md), section 03
 
 ## 3. Tokens
 
@@ -24,7 +24,7 @@ dquote    := '"' (escape | char)* '"'    ; char: any except '"' '\' NL
 escape    := '\n' | '\t' | '\\' | '\"' | '\u' hex{4}
 hex       := [0-9A-Fa-f]
 
-type      := [a-z] [a-z0-9_-]*        ; schema position only (optionality via a descriptor, not a suffix)
+type      := [a-z] [a-z0-9_-]*          ; schema position only (optionality via descriptor, §5)
 
 empty-map  := "{}"
 empty-list := "[]"
@@ -39,10 +39,10 @@ empty-list := "[]"
   verification error, not a parse error (spec §5).
 - `{}` and `[]` are atomic tokens; `{`, `}`, `[`, `]` in any other context
   are errors.
-- `,` is not a token — a comma anywhere is an error.
-- `#` is not a token — comments are stripped during lexing.
+- `,` is not a token. A comma anywhere is an error.
+- `#` is not a token. Comments are stripped during lexing.
 - An unrecognized escape sequence is an `unexpected-character` error.
-  Surrogate pairs (`\ud800`–`\udfff`) are always errors even if syntactically
+  Surrogate pairs (`\ud800` to `\udfff`) are always errors even if syntactically
   well-formed.
-- `\''` (escaped single quote) is not a valid escape — single quotes have no
+- `\''` (escaped single quote) is not a valid escape. Single quotes have no
   special meaning.

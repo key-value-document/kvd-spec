@@ -1,15 +1,13 @@
-[KVD spec](../README.md) — section 10
+[KVD spec](../README.md), section 10
 
-## 10. Validation constraints (planned for 1.1)
+## 10. Validation constraints
 
-Status: **planned**. This section describes a backward-compatible extension
-to the schema grammar. It is not part of 1.0: a 1.0 verifier ignores it, and
-a 1.0 document or schema remains valid under 1.1.
+Status: **normative since 1.0**. The descriptor form (`type` plus `optional: true`) and the `validation` block (ranges, lengths, patterns) are both part of 1.0. A conforming verifier must enforce `validation` constraints as defined below.
 
 ### Motivation
 
 Shape typing ([§5](05-values.md)) confirms that a value is an int, a string,
-and so on — but not that it is a *sensible* int or string. Validation adds
+and so on, but not that it is a *sensible* int or string. Validation adds
 optional, declarative constraints on top of the shape: ranges, lengths, and
 patterns. Constraints are expressed entirely in the schema, never inline in
 the data.
@@ -19,11 +17,11 @@ the data.
 A schema leaf may be written either as a bare type name or as a descriptor
 block. The descriptor is an indented map with two reserved keys:
 
-- `type` (required) — a bare type name (`int`, `float`, `bool`, `str`,
+- `type` (required): a bare type name (`int`, `float`, `bool`, `str`,
   `list`, `map`). For `type: list` a required `element` key gives the
   (uniform) item type; for `type: map` no field keys are required (typed
   maps use the nested sub-schema form).
-- `validation` (optional) — an indented map of constraint keys.
+- `validation` (optional): an indented map of constraint keys.
 
 ```
 app:
@@ -78,28 +76,21 @@ declared numeric type; `min`/`max` are inclusive, `exclusive_min`/
 `exclusive_max` are exclusive. `pattern` is a regular expression matched
 against the full string value (equivalent to anchoring the pattern with `^`
 and `$`). The pattern dialect is a Perl/PCRE-style regular expression restricted to the
-backtracking-free subset (no look-around, no backreferences) — the syntax of
+backtracking-free subset (no look-around, no backreferences). This is the syntax of
 RE2 and the Rust `regex` crate. The exact engine is an implementation detail.
 
 ### Optionality and null
 
-If the declared type carries `optional: true` and the data value is `null` (or the key is
-absent), constraint checks are skipped — `null`/absence means "no value to
-validate". Constraints apply only when a concrete value is present.
+If the declared type is optional (`optional: true`, [§5](05-values.md)) and
+the data value is `null` (or the key is absent), constraint checks are
+skipped. In this case `null`/absence means "no value to validate". Constraints apply
+only when a concrete value is present.
 
 ### Verification
 
 Validation runs as part of the verify pass ([§8](08-operations.md)), after
-shape typing. The order is: shape check (existing), then constraint checks
-(1.1). A constraint failure is reported as a new `constraint` violation
-([§6](06-errors.md)), carrying the dotted path and a message such as
-`value 1000 exceeds max 999`. An unknown constraint key for a given type
-(for example `pattern` on an `int`) is an error.
-
-### Backward compatibility
-
-- A 1.0 schema (bare type names only) is valid under 1.1 and gains no new
-  checks.
-- A 1.1 schema that uses descriptors is rejected by a 1.0 verifier as a
-  schema error, so the minor-version bump is the signal that a verifier
-  understands descriptors.
+shape typing. The order is: shape check, then constraint checks. A constraint
+failure is reported as a `constraint` violation ([§6](06-errors.md)), carrying
+the dotted path and a message such as `value 1000 exceeds max 999`. An unknown
+constraint key for a given type (for example `pattern` on an `int`) is an
+error.

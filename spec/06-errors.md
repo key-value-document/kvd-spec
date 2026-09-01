@@ -1,4 +1,4 @@
-[KVD spec](../README.md) — section 06
+[KVD spec](../README.md), section 06
 
 ## 6. Error model
 
@@ -27,13 +27,13 @@ Produced by the parser from document text:
 
 ### Verification errors
 
-Produced by the schema verifier as `Violation` values (path + message),
+Produced by the schema verifier as `Violation` values (path plus message),
 not as parse errors. Each carries the dotted path of the offending value:
 
-- **unknown key** — a data key has no counterpart in the schema
-- **missing key** — a required schema key is absent from the data
-- **schema mismatch** — a value's shape does not match its declared type
-- **unknown type** — a schema leaf names a type that is not a builtin
-- **null without optional type** — `null` appears under a non-optional type
-- **constraint** (planned, 1.1) — a value violates a declared constraint
+- **unknown key**: a data key has no counterpart in the schema
+- **missing key**: a required schema key is absent from the data
+- **schema mismatch**: a value's shape does not match its declared type
+- **unknown type**: a schema leaf names a type that is not a builtin
+- **null without optional type**: `null` appears under a non-optional type
+- **constraint**: a value violates a declared constraint
   (range, length, or pattern); see [§10](10-validation.md)

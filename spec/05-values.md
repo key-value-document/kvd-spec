@@ -1,4 +1,4 @@
-[KVD spec](../README.md) — section 05
+[KVD spec](../README.md), section 05
 
 ## 5. Values and types
 
@@ -6,7 +6,7 @@ Data model: a document is an ordered map of keys to nodes; a node is a
 scalar, a map, or a list. Maps preserve insertion order. Metakeys are not
 part of the data model.
 
-Shape typing — a closed, predictable set (nothing else is coerced):
+Shape typing uses a closed, predictable set. Nothing else is coerced:
 
 | Written                           | Result   |
 |-----------------------------------|----------|
@@ -29,7 +29,7 @@ meaningful only in schema documents; in data documents they parse as strings.
 Any other unquoted token is an `unexpected-character` error.
 `true`, `false`, and `null` are shape literals, not reserved words: unquoted
 they are bools/null, `"true"` is the string. Keys named `true` are legal,
-and keys may start with digits (`8080`, `2fa`) — keys are always strings.
+and keys may start with digits (`8080`, `2fa`). Keys are always strings.
 
 ### Null and absence
 
@@ -44,7 +44,7 @@ key optional (`optional: true`) and write `null` or omit the key.
 
 The parser stores numbers verbatim: a number node is its exact written text
 tagged with its shape, with no conversion to a machine integer or float.
-Range and precision are the consumer's concern — `1e999` and
+Range and precision are the consumer's concern. `1e999` and
 `99999999999999999999` are valid values.
 
 ### Schemas and types
@@ -52,7 +52,7 @@ Range and precision are the consumer's concern — `1e999` and
 Types are declared in a schema, never inline. The builtin type set is closed:
 `int`, `float`, `bool`, `str`, `list`, `map`. There are no custom types. The
 first four are scalar types; `list` and `map` are container types and may
-appear only as the `type` of a descriptor — they give a list or map an
+appear only as the `type` of a descriptor. They give a list or map an
 `optional` or `validation` slot (see below).
 
 Type names are bare (unquoted) words in schema position only. A name that is
@@ -82,7 +82,7 @@ form adds `optional: true` and/or `validation`. An optional key may be
 absent, present with a value of the declared type, or present as `null`. A
 required key (no `optional: true`) that is absent is a missing-key error and
 `null` is an error (`null` requires `optional: true`). `optional` applies to
-any descriptor, including `type: list` and `type: map` containers — so a list
+any descriptor, including `type: list` and `type: map` containers. So a list
 or map key may now be absent or `null`. The bare `{}`/`[]` leaves remain
 always required; use `type: list`/`type: map` to make a container optional.
 
@@ -120,9 +120,8 @@ cfg:
   optional: true
 ```
 
-Optional per-value constraints — numeric ranges, string/list lengths, and
-regular-expression patterns — are planned for 1.1 and are described in
-[§10](10-validation.md). They are not part of 1.0.
+Optional per-value constraints such as numeric ranges, string/list lengths, and
+regular-expression patterns are described in [§10](10-validation.md).
 
 ### Multi-line strings
 
