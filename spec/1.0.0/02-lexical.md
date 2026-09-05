@@ -1,4 +1,4 @@
-[KVD spec](../README.md), section 02
+[KVD spec](../../README.md), section 02
 
 ## 2. Lexical rules
 

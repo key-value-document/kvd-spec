@@ -1,4 +1,4 @@
-[KVD spec](../README.md), section 04
+[KVD spec](../../README.md), section 04
 
 ## 4. Grammar (EBNF)
 

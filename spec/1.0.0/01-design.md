@@ -1,4 +1,4 @@
-[KVD spec](../README.md), section 01
+[KVD spec](../../README.md), section 01
 
 ## 1. Design principles
 

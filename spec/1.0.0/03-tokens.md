@@ -1,4 +1,4 @@
-[KVD spec](../README.md), section 03
+[KVD spec](../../README.md), section 03
 
 ## 3. Tokens
 

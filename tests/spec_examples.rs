@@ -28,12 +28,12 @@ fn blocks(path: &str) -> Vec<String> {
 fn spec_code_blocks_parse() {
     for file in [
         "README.md",
-        "spec/02-lexical.md",
-        "spec/03-tokens.md",
-        "spec/04-grammar.md",
-        "spec/05-values.md",
-        "spec/06-errors.md",
-        "spec/07-example.md",
+        "spec/1.0.0/02-lexical.md",
+        "spec/1.0.0/03-tokens.md",
+        "spec/1.0.0/04-grammar.md",
+        "spec/1.0.0/05-values.md",
+        "spec/1.0.0/06-errors.md",
+        "spec/1.0.0/07-example.md",
     ] {
         for (i, block) in blocks(file).iter().enumerate() {
             if block.contains(":=") || block.contains("# error") {
@@ -46,7 +46,7 @@ fn spec_code_blocks_parse() {
 
 #[test]
 fn section7_example_verifies() {
-    let b = blocks("spec/07-example.md");
+    let b = blocks("spec/1.0.0/07-example.md");
     assert!(b.len() >= 2, "section 7 needs data and schema blocks");
     verify_from_str(&b[0], &b[1])
         .unwrap_or_else(|e| panic!("section 7 data does not satisfy its schema: {e}"));

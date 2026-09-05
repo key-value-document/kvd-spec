@@ -1,4 +1,4 @@
-[KVD spec](../README.md), section 10
+[KVD spec](../../README.md), section 10
 
 ## 10. Validation constraints
 

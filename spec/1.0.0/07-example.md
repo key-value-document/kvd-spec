@@ -1,4 +1,4 @@
-[KVD spec](../README.md), section 07
+[KVD spec](../../README.md), section 07
 
 ## 7. Full example
 

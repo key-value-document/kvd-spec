@@ -1,4 +1,4 @@
-[KVD spec](../README.md), section 05
+[KVD spec](../../README.md), section 05
 
 ## 5. Values and types
 

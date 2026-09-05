@@ -1,4 +1,4 @@
-[KVD spec](../README.md), section 11
+[KVD spec](../../README.md), section 11
 
 # 11. Document merging (planned for 1.x)
 

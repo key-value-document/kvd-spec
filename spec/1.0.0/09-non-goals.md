@@ -1,4 +1,4 @@
-[KVD spec](../README.md), section 09
+[KVD spec](../../README.md), section 09
 
 ## 9. Non-goals
 

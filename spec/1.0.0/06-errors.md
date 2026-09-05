@@ -1,4 +1,4 @@
-[KVD spec](../README.md), section 06
+[KVD spec](../../README.md), section 06
 
 ## 6. Error model
 

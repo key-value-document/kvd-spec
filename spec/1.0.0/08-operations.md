@@ -1,4 +1,4 @@
-[KVD spec](../README.md), section 08
+[KVD spec](../../README.md), section 08
 
 ## 8. Operations
 
@@ -141,7 +141,7 @@ list was required (`NotAMap` / `NotAList`).
 #### Document merging: deferred to §11
 
 Merging two documents is **out of scope for 1.0**. The design is specified in
-[§11](spec/11-merge.md) (planned): the merge policy is declared **per-field in
+[§11](11-merge.md) (planned): the merge policy is declared **per-field in
 the schema** (not passed as a parameter), with strategies `replace`, `deep`,
 `append`, `union`, and `by-key`, and a safe default of `replace`. Until then,
 `set` (which replaces a target node wholesale) is the only write primitive.
