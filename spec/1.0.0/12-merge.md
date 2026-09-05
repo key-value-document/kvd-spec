@@ -26,7 +26,7 @@ each call site.
 ```text
 merge(base, overlay)            # uses base's embedded __schema__
 merge(base, overlay, schema)    # uses an explicit schema
-```kvd
+```
 
 - **base**: the lower-precedence document (for example chart defaults).
 - **overlay**: the higher-precedence document (for example user values).
@@ -45,7 +45,7 @@ value stacking:
 doc = merge(defaults, userA)
 doc = merge(doc, userB)
 doc = merge(doc, cliOverrides)
-```kvd
+```
 
 ## 12.3 Policy model
 
@@ -124,7 +124,12 @@ Algorithm:
 - **Duplicate key**: two elements within the *same* list sharing the same
   `key` value is a `MergeError::DuplicateKey` (the match would be ambiguous).
 
-`key` is a single top-level field name in this version; nested key paths are
+`key` is a single literal field name in this version, matched verbatim
+against each element's keys: it is not a dotted path, so a key containing
+dots (for example the Kubernetes label `app.kubernetes.io/name`) is
+addressed by its full literal text. In a document the key is written
+quoted (`"app.kubernetes.io/name"`); in a `Path` string it is written as a
+quoted segment (§9.5). Dotted nested paths (for example `spec.name`) are
 deferred.
 
 ## 12.6 Shape and policy conflicts
@@ -149,13 +154,19 @@ deferred.
 - `DuplicateKey`: duplicate key value within a single list (§12.5).
 - `ShapeMismatch`: a strategy applied to an incompatible shape (§12.6).
 
-## 12.8 Open questions (to resolve before implementation)
+## 12.8 Resolved rules
 
-- **`null` in overlay:** under an optional field, should a `null` overlay
-  value delete the base key (Helm `--set key=null` semantics) or set it to
-  `null`? Currently unspecified.
-- **Nested `key` path:** `by-key` `key` is a single field name; nested paths
-  (for example `spec.name`) deferred.
-- **Cross-shape base/overlay:** if `base` and `overlay` disagree on shape at a
-  `deep` / `append` field, the current rule is `ShapeMismatch`; an alternative
-  is "overlay wins" (`replace`). To be finalized.
+- **`null` in overlay deletes the base key.** Under an optional field, a
+  `null` overlay value removes the key from the merged result (Helm
+  `--set key=null` semantics), it does not set the key to `null`. A
+  `null` base value merged under an absent overlay key stays `null`.
+- **Cross-shape base/overlay is `ShapeMismatch`.** If `base` and `overlay`
+  disagree on shape at a `deep` / `append` / `union` / `by-key` field, merge
+  fails with `MergeError::ShapeMismatch`; the overlay does not silently win.
+  Use `replace` (the default) for fields where the overlay is meant to win
+  across shapes.
+
+## 12.9 Deferred
+
+- **Nested `key` path:** `by-key` `key` is a single literal field name
+  (§12.5); nested paths (for example `spec.name`) deferred.
