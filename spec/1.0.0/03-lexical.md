@@ -1,6 +1,6 @@
-[KVD spec](../../README.md), section 02
+[KVD spec](../../README.md), section 03
 
-## 2. Lexical rules
+## 3. Lexical rules
 
 ### Encoding and line endings
 
@@ -10,8 +10,10 @@
 
 ### Indentation
 
-- Spaces only, exactly 2 per level. Any other count is an error.
-- A tab anywhere outside a double-quoted string or `"""` block is an error.
+- Spaces only, exactly 2 per level. Any other count is an error
+  (`bad-indent`).
+- A tab anywhere outside a quoted string (single-quoted literal,
+  double-quoted string, or `"""` block) is a `tab` error.
 - Blank lines are allowed anywhere between tokens and carry no indent
   semantics. Trailing whitespace on any line is ignored.
 
@@ -24,15 +26,17 @@
 
 - Newlines are structural: they terminate lines and drive INDENT/DEDENT.
   Values never span lines except inside quoted strings (`\n` escape) and
-  `"""` blocks ([§4](04-grammar.md)).
+  `"""` blocks ([§5](05-grammar.md)).
 
 ### Strings
 
-- String values are always double-quoted: `"..."` for a single line,
-  `"""..."""` for multiple lines ([§4](04-grammar.md)).
+- String values use double quotes (`"..."`), the single-quoted literal
+  form (`'...'`, no escapes), or the multi-line block (`"""..."""`,
+  [§5](05-grammar.md)).
 - Non-ASCII characters in strings may be written literally or escaped as
   `\uXXXX` (Unicode code points U+0000 to U+FFFF). Code points above U+FFFF
   must be written literally as UTF-8; there is no surrogate-pair escape.
+  Surrogate escapes (`\ud800` to `\udfff`) are always errors.
 
 ### Numbers
 
@@ -46,19 +50,25 @@
 
 ### Keys
 
-- Keys are restricted to ASCII alphanumerics plus `-` and `_`, must not
-  start or end with `-` or `_`, and may start with a digit (`8080`, `2fa`).
-- Keys are always bare. Quoting a key is an error.
-- Dots are path separators, not key characters. A key can never contain a dot.
+- Bare keys are restricted to ASCII alphanumerics plus `-` and `_`, must
+  not start or end with `-` or `_`, and may start with a digit (`8080`,
+  `2fa`).
+- A key that is not a valid bare key (for example one containing `.`, `/`,
+  or `:`) is written quoted with `"` or `'`; the quoted spelling denotes
+  that literal key.
+- Dots are path separators, not key characters. A bare key can never
+  contain a dot.
 
 ### Metakeys
 
-- A key matching `__name__` (double underscores, a lowercase letter, then
-  lowercase letters/digits/`-`/`_`, double underscores) is a metakey.
+- A bare key matching `__name__` (double underscores, a lowercase letter,
+  then lowercase letters/digits/`-`/`_`, double underscores) is a metakey.
 - Metakeys are reserved and allowed only at the document root. The only
-  defined metakey is `__schema__` ([§4](04-grammar.md)), which is retained
-  in the root map ([§8.1](08-operations.md)) but excluded from verification
-  ([§8.3](08-operations.md)). Any other metakey is an error.
+  defined metakey is `__schema__` ([§5](05-grammar.md)), which is retained
+  in the root map ([§9.1](09-operations.md)) but excluded from verification
+  ([§9.3](09-operations.md)). Any other bare metakey is an
+  `unknown-metakey` error. A quoted `"__name__"` is an ordinary literal
+  key, not a metakey.
 
 ### Separators and markers
 
@@ -68,13 +78,14 @@
   end of line.
 - List marker: `- ` (dash plus exactly one space), sitting at the parent key's
   indent plus 2. A `-` alone at end of line introduces a nested list item
-  ([§4](04-grammar.md)). Any other standalone `-` is an error.
+  ([§5](05-grammar.md)). Any other standalone `-` is a `bad-list-marker`
+  error.
 
 ### Empty collections and limits
 
 - `{}` is an empty mapping; `[]` is an empty list. They are atomic tokens.
   `{`, `}`, `[`, `]` may not appear in any other context.
 - An empty document (or a comments-only document) parses as an empty mapping.
-- Max nesting depth: 100 (configurable), counting indent levels and dotted
-  path segments together. There are no aliases, so there is no
-  billion-laughs class.
+- Max nesting depth: 100. The limit is configurable in implementations; it
+  counts indent levels and dotted path segments together. There are no
+  aliases, so there is no billion-laughs expansion class.

@@ -1,6 +1,6 @@
-[KVD spec](../../README.md), section 09
+[KVD spec](../../README.md), section 10
 
-## 9. Non-goals
+## 10. Non-goals
 
 The following features are permanently out of scope. They will not be added
 in any future version of KVD.
@@ -27,7 +27,9 @@ in any future version of KVD.
 
 - **Custom types**. The builtin type set (`int`, `float`, `bool`, `str`, `list`, `map`)
   is closed. There are no user-defined or pluggable types.
-- **Single-quoted strings**. Double-quote is the only string delimiter.
+- **Single-quoted strings as canonical form**. Double-quote is the only
+  canonical string delimiter; `'...'` is an accepted literal alias (§3)
+  but is never emitted.
 - **Inline annotations**. Types, comments, and metadata are never mixed
   into the value syntax.
 - **Streaming / incremental parsing**. A KVD document is a complete unit;

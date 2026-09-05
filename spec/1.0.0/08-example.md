@@ -1,10 +1,10 @@
-[KVD spec](../../README.md), section 07
+[KVD spec](../../README.md), section 08
 
-## 7. Full example
+## 8. Full example
 
 Data (`app.kvd`):
 
-```
+```kvd
 # server config
 app:
   name: "hello"
@@ -34,11 +34,13 @@ tls:
     MIIB...
     -----END CERTIFICATE-----
   """
-```
+```kvd
 
-Schema (`app.schema.kvd`): a bare tree whose values are builtin types:
+Schema (`app.schema.kvd`): a bare tree whose values are builtin types. The
+list-of-strings uses the single-element list form; the open map and list
+use the bare `{}`/`[]` leaves:
 
-```
+```kvd
 app:
   name: str
   port: int

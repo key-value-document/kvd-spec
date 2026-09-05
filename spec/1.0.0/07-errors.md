@@ -1,9 +1,11 @@
-[KVD spec](../../README.md), section 06
+[KVD spec](../../README.md), section 07
 
-## 6. Error model
+## 7. Error model
 
 Every error carries a `line:col` position and a category. The grammar is
 deterministic enough that an invalid document has exactly one explanation.
+Parse errors come from reading the text; verification errors come from
+checking parsed data against a schema.
 
 ### Parse errors
 
@@ -12,7 +14,7 @@ Produced by the parser from document text:
 | Category | Meaning |
 |---|---|
 | `bad-indent` | Indentation is not a multiple of 2, or a subtree is misaligned |
-| `tab` | A tab is used for indentation, or appears outside a double-quoted string or a `"""` block (tabs are allowed only inside `"""` content) |
+| `tab` | A tab is used for indentation, or appears outside a quoted string or a `"""` block (tabs are allowed only inside quoted content) |
 | `bad-list-marker` | A `-` marker must be followed by exactly one space or a newline; a `-` at end of line opens a nested list. It is also an error when a `-` appears where a mapping key was expected |
 | `misaligned-key` | A key in a mapping list item does not align to the first key of that item |
 | `missing-value` | A key has no value and no indented subtree |
@@ -25,10 +27,26 @@ Produced by the parser from document text:
 | `depth-limit` | Nesting exceeds the maximum depth (default 100) |
 | `unexpected-character` | A character or token is not valid in this position |
 
+Valid input parses; mis-indented input reports its category:
+
+```kvd
+a: "ok"
+```kvd
+
+```kvd
+# error: bad-indent (3 spaces)
+a:
+   b: "x"
+```
+
 ### Verification errors
 
 Produced by the schema verifier as `Violation` values (path plus message),
-not as parse errors. Each carries the dotted path of the offending value:
+not as parse errors. Each carries the dotted path of the offending value.
+Schema-shape problems (quoted or numbered type leaf, bare `list`/`map`
+leaf, descriptor missing its `type`, unknown type name, unknown constraint
+key, schema list with anything but exactly one element type) are reported
+as a malformed schema (§9.3), distinct from document violations:
 
 - **unknown key**: a data key has no counterpart in the schema
 - **missing key**: a required schema key is absent from the data
@@ -36,4 +54,4 @@ not as parse errors. Each carries the dotted path of the offending value:
 - **unknown type**: a schema leaf names a type that is not a builtin
 - **null without optional type**: `null` appears under a non-optional type
 - **constraint**: a value violates a declared constraint
-  (range, length, or pattern); see [§10](10-validation.md)
+  (range, length, or pattern); see [§11](11-validation.md)

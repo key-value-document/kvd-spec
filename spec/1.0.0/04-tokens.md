@@ -1,10 +1,10 @@
-[KVD spec](../../README.md), section 03
+[KVD spec](../../README.md), section 04
 
-## 3. Tokens
+## 4. Tokens
 
 The token grammar. `:=` is the definition operator (meta-syntax).
 
-```
+```ebnf
 NL, INDENT, DEDENT, EOF
 ':'  '-'  '"""'
 
@@ -21,14 +21,19 @@ float     := [+-]? pint "." digit+ ([eE] [+-]? digit+)?
 pint      := "0" | [1-9] digit*          ; ungrouped integer part
 
 dquote    := '"' (escape | char)* '"'    ; char: any except '"' '\' NL
-escape    := '\n' | '\t' | '\\' | '\"' | '\u' hex{4}
+squote    := "'" char* "'"               ; literal: no escapes, no "'" inside
+escape    := '\n' | '\t' | '\\' | '\"' | "\'" | '\u' hex{4}
 hex       := [0-9A-Fa-f]
 
-type      := [a-z] [a-z0-9_-]*          ; schema position only (optionality via descriptor, §5)
+type      := [a-z] [a-z0-9_-]*          ; schema position only (optionality via descriptor, §6)
 
 empty-map  := "{}"
 empty-list := "[]"
 ```
+
+Single-quoted `'...'` is a literal string with no escape processing (§3).
+It is accepted for compatibility but is not canonical: `emit` always
+produces `"..."`.
 
 **Disambiguation:**
 - In key position, `metakey` wins over `key`; `key` wins over `int`/`float`.
@@ -36,7 +41,7 @@ empty-list := "[]"
 - In value position, `type` tokens are accepted as bare strings. They are
   meaningful only in schema documents; in data documents they are strings
   whose value is the type name. Unknown type names produce an `unknown-type`
-  verification error, not a parse error (spec §5).
+  verification error, not a parse error (§6).
 - `{}` and `[]` are atomic tokens; `{`, `}`, `[`, `]` in any other context
   are errors.
 - `,` is not a token. A comma anywhere is an error.
@@ -44,5 +49,5 @@ empty-list := "[]"
 - An unrecognized escape sequence is an `unexpected-character` error.
   Surrogate pairs (`\ud800` to `\udfff`) are always errors even if syntactically
   well-formed.
-- `\''` (escaped single quote) is not a valid escape. Single quotes have no
-  special meaning.
+- `\'` is a valid escape in `"..."` (yields `'`). Single quotes have no
+  special meaning inside double-quoted strings.
