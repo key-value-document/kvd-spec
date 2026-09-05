@@ -54,9 +54,9 @@ fn spec_code_blocks_parse() {
 }
 
 #[test]
-fn section7_example_verifies() {
+fn section8_example_verifies() {
     let b = blocks("spec/1.0.0/08-example.md");
     assert!(b.len() >= 2, "section 8 needs data and schema blocks");
     verify_from_str(&b[0], &b[1])
-        .unwrap_or_else(|e| panic!("section 7 data does not satisfy its schema: {e}"));
+        .unwrap_or_else(|e| panic!("section 8 data does not satisfy its schema: {e}"));
 }
