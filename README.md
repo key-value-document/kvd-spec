@@ -1,8 +1,8 @@
 # KVD: Key-Value Document format
 
-KVD is a small format for configuration files and structured data. If you
-can write a shopping list, you can write KVD: each line is a `key: value`
-pair, and indenting with 2 spaces groups lines together.
+KVD is a small format for configuration files and structured data. Each
+line is a `key: value` pair, and indenting with 2 spaces groups lines
+together.
 
 ## A first look
 
