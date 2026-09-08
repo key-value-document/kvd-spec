@@ -20,7 +20,7 @@ else is patch-level.
 6. [Values and types](spec/1.0.0/06-values.md): shape typing, schemas, multi-line strings
 7. [Error model](spec/1.0.0/07-errors.md): error categories
 8. [Full example](spec/1.0.0/08-example.md): a data document with its companion schema
-9. [Operations](spec/1.0.0/09-operations.md): parse, emit, verify, typed round-trip
+9. [Operations](spec/1.0.0/09-operations.md): parse, emit, verify, typed round-trip, programmatic editing
 10. [Non-goals](spec/1.0.0/10-non-goals.md): features that are permanently out of scope
 11. [Validation constraints](spec/1.0.0/11-validation.md): ranges, lengths, patterns
-12. [Document merging](spec/1.0.0/12-merge.md): per-field merge policy (planned for 1.x)
+12. [Document merging](spec/1.0.0/12-merge.md): per-field merge policy (planned for 1.x; null-deletes, literal by-key, strict ShapeMismatch resolved)
