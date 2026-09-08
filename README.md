@@ -1,4 +1,4 @@
-# KVD: Key-Value Document format
+# Key-Value Document Specification
 
 KVD is a small format for configuration files and structured data. Each
 line is a `key: value` pair, and indenting with 2 spaces groups lines
