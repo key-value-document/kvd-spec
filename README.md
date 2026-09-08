@@ -1,14 +1,120 @@
 # KVD: Key-Value Document format
 
-Name: **kvd**. Status: 1.0.
-Goal: a general-purpose, opinionated config/data format that keeps YAML's
-readability without its pitfalls, and is small enough to implement in ~200
-lines of parser plus error handling.
+KVD is a small format for configuration files and structured data. If you
+can write a shopping list, you can write KVD: each line is a `key: value`
+pair, and indenting with 2 spaces groups lines together.
 
-Versioning: the format follows SemVer. Any change that makes a previously
-valid document invalid, or changes the shape of a value, bumps the major
-version; backward-compatible additions bump the minor version; everything
-else is patch-level.
+## A first look
+
+```kvd
+server:
+  host: "localhost"
+  port: 8080
+  debug: false
+```
+
+Three things to notice:
+
+- `server:` with nothing after it starts a group; the indented lines below
+  belong to it.
+- Text goes in double quotes (`"localhost"`). Numbers (`8080`),
+  `true`/`false`, and `null` stand alone without quotes.
+- Indentation is always 2 spaces per level. Tabs are not allowed.
+
+Deeper nesting just indents further:
+
+```kvd
+server:
+  tls:
+    enabled: true
+    cert: "/etc/app/cert.pem"
+```
+
+As a shortcut, dots in a key mean the same as nesting, so
+`server.port: 8080` and the two-line form above are identical.
+
+## Lists
+
+A key with list items underneath holds a list. Each item starts with `- `:
+
+```kvd
+tags:
+  - "web"
+  - "api"
+```
+
+Items can be groups too. Put the first key on the `- ` line and line the
+rest up under it:
+
+```kvd
+endpoints:
+  - path: "/health"
+    method: "GET"
+  - path: "/ready"
+    method: "GET"
+```
+
+## Values at a glance
+
+| What you write        | What it means              |
+|-----------------------|----------------------------|
+| `"hello"`             | text                       |
+| `8080`, `4.5`, `-3`   | numbers                    |
+| `true`, `false`       | yes/no                     |
+| `null`                | no value (see below)       |
+| `{}`                  | an empty group             |
+| `[]`                  | an empty list              |
+| `"""` ... `"""`       | text spanning many lines   |
+
+`null` means "no value". If a setting is simply not needed, leave the key
+out; use `null` when you want to say explicitly that it is unset:
+
+```kvd
+retries: null
+labels: {}
+search: []
+```
+
+Anything else must be quoted. Dates, yes/no words, and version numbers are
+text, so they need quotes:
+
+```kvd
+when: "2026-08-20"
+flag: "yes"
+version: "1.10"
+```
+
+Lines starting with `#` are comments for humans and are ignored:
+
+```kvd
+# Increase this if the server is slow.
+timeout: 30
+```
+
+## Checking your config with a schema
+
+A schema describes what a valid config looks like: it uses type names
+(`str`, `int`, `bool`, `float`, `null`, `map`, `list`, `any`) where data
+has values.
+
+```kvd
+server:
+  port: int
+  host: str
+```
+
+The config below satisfies that schema; changing `port` to `"eighty"`
+would fail with a type error instead of breaking the server at startup:
+
+```kvd
+server:
+  port: 8080
+  host: "localhost"
+```
+
+Schemas can also mark keys optional and set allowed ranges, lengths, and
+text patterns. Start with the [user guide](spec/1.0.0/02-guide.md), then
+read [validation](spec/1.0.0/11-validation.md) when you need constraints.
 
 ## Contents
 
@@ -24,3 +130,10 @@ else is patch-level.
 10. [Non-goals](spec/1.0.0/10-non-goals.md): features that are permanently out of scope
 11. [Validation constraints](spec/1.0.0/11-validation.md): ranges, lengths, patterns
 12. [Document merging](spec/1.0.0/12-merge.md): per-field merge policy (planned for 1.x; null-deletes, literal by-key, strict ShapeMismatch resolved)
+
+## Versioning
+
+The format follows SemVer. Any change that makes a previously valid
+document invalid, or changes the shape of a value, bumps the major version;
+backward-compatible additions bump the minor version; everything else is
+patch-level.
