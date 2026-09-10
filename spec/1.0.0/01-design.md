@@ -108,6 +108,6 @@ server:
   host: str
 ```
 
-### No aliases, tags, or streams
+### Aliases, tags, or streams
 
 KVD has no anchors, aliases, merge keys, tags, directives, multi-document streams, or duplicate keys. The only reserved namespace is metakeys (`__...__`), defined in §02.
