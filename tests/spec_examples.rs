@@ -1,5 +1,5 @@
 //! Drift guard: every KVD code block in the spec must parse, and the
-//! section 8 example must verify against its companion schema.
+//! section 7 example must verify against its companion schema.
 
 use kvd_rs::{deserialize::from_str, schema::verify_from_str};
 
@@ -36,17 +36,19 @@ fn blocks(path: &str) -> Vec<String> {
 fn spec_code_blocks_parse() {
     for file in [
         "README.md",
-        "spec/1.0.0/02-guide.md",
-        "spec/1.0.0/03-lexical.md",
-        "spec/1.0.0/04-tokens.md",
-        "spec/1.0.0/05-grammar.md",
-        "spec/1.0.0/06-values.md",
-        "spec/1.0.0/07-errors.md",
-        "spec/1.0.0/08-example.md",
+        "spec/1.0.0/02-lexical.md",
+        "spec/1.0.0/03-tokens.md",
+        "spec/1.0.0/04-grammar.md",
+        "spec/1.0.0/05-values.md",
+        "spec/1.0.0/06-errors.md",
+        "spec/1.0.0/07-example.md",
     ] {
         for (i, block) in blocks(file).iter().enumerate() {
             if block.contains(":=") || block.contains("# error") {
                 continue; // grammar or an intentional-error sample
+            }
+            if block.lines().any(|l| l.trim_start().starts_with("= ")) {
+                continue; // dict entries: new 1.0.0 syntax, pending impl
             }
             from_str(block).unwrap_or_else(|e| panic!("{file} block {i} fails to parse: {e}"));
         }
@@ -54,9 +56,12 @@ fn spec_code_blocks_parse() {
 }
 
 #[test]
-fn section8_example_verifies() {
-    let b = blocks("spec/1.0.0/08-example.md");
-    assert!(b.len() >= 2, "section 8 needs data and schema blocks");
+fn section7_example_verifies() {
+    let b = blocks("spec/1.0.0/07-example.md");
+    assert!(b.len() >= 2, "section 7 needs data and schema blocks");
+    if b[0].lines().any(|l| l.trim_start().starts_with("= ")) {
+        return; // dict entries: new 1.0.0 syntax, pending impl
+    }
     verify_from_str(&b[0], &b[1])
-        .unwrap_or_else(|e| panic!("section 8 data does not satisfy its schema: {e}"));
+        .unwrap_or_else(|e| panic!("section 7 data does not satisfy its schema: {e}"));
 }

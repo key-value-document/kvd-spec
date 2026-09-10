@@ -1,12 +1,12 @@
 [KVD spec](../../README.md), section 04
 
-## 4. Tokens
+## 3. Tokens
 
 The token grammar. `:=` is the definition operator (meta-syntax).
 
 ```ebnf
 NL, INDENT, DEDENT, EOF
-':'  '-'  '"""'
+':'  '-'  '='  '"""'
 
 key       := [A-Za-z0-9]
            | [A-Za-z0-9] [A-Za-z0-9_-]* [A-Za-z0-9]   ; no dots, no quotes
@@ -25,13 +25,13 @@ squote    := "'" char* "'"               ; literal: no escapes, no "'" inside
 escape    := '\n' | '\t' | '\\' | '\"' | "\'" | '\u' hex{4}
 hex       := [0-9A-Fa-f]
 
-type      := [a-z] [a-z0-9_-]*          ; schema position only (optionality via descriptor, §6)
+type      := [a-z] [a-z0-9_-]*          ; schema position only (optionality via descriptor, §05)
 
 empty-map  := "{}"
 empty-list := "[]"
 ```
 
-Single-quoted `'...'` is a literal string with no escape processing (§3).
+Single-quoted `'...'` is a literal string with no escape processing (§02).
 It is accepted for compatibility but is not canonical: `emit` always
 produces `"..."`.
 
@@ -41,9 +41,11 @@ produces `"..."`.
 - In value position, `type` tokens are accepted as bare strings. They are
   meaningful only in schema documents; in data documents they are strings
   whose value is the type name. Unknown type names produce an `unknown-type`
-  verification error, not a parse error (§6).
+  verification error, not a parse error (§05).
 - `{}` and `[]` are atomic tokens; `{`, `}`, `[`, `]` in any other context
   are errors.
+- `=` is a token only as a dict entry marker at the start of a subtree
+  line (`= ` plus the entry). Any other `=` is an error.
 - `,` is not a token. A comma anywhere is an error.
 - `#` is not a token. Comments are stripped during lexing.
 - An unrecognized escape sequence is an `unexpected-character` error.

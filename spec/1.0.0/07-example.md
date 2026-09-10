@@ -1,6 +1,6 @@
 [KVD spec](../../README.md), section 08
 
-## 8. Full example
+## 7. Full example
 
 Data (`app.kvd`):
 
@@ -18,13 +18,29 @@ app:
   tags:
     - "web"
     - "api"
-  labels: {}
+  labels:
+    = "team": "web"
+    = "app.kubernetes.io/name": "hello"
+  metrics:
+    = "a.b.c/name": 99.9
+    = "errors/total": 3
   limits.cpu: 0.5
   endpoints:
     - path: "/health"
       method: "GET"
     - path: "/ready"
       method: "GET"
+  matrix:
+    -
+      - 1
+      - 2
+    -
+      - 3
+      - 4
+  groups:
+    = "team-a":
+      - "amy"
+      - "bo"
   dns:
     search: []
 
@@ -34,10 +50,11 @@ tls:
     MIIB...
     -----END CERTIFICATE-----
   """
-```kvd
+```
 
 Schema (`app.schema.kvd`): a bare tree whose values are builtin types. The
-list-of-strings uses the single-element list form; the open map and list
+list-of-strings uses the single-element list form; the dicts use the
+single-entry form (the example key is a placeholder); the open dict and list
 use the bare `{}`/`[]` leaves:
 
 ```kvd
@@ -49,12 +66,21 @@ app:
   greeting: str
   tags:
     - str
-  labels: {}
+  labels:
+    = "example": str
+  metrics:
+    = "example": float
   limits:
     cpu: float
   endpoints:
     - path: str
       method: str
+  matrix:
+    -
+      - int
+  groups:
+    = "example":
+      - str
   dns:
     search: []
 tls:

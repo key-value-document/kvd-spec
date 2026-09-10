@@ -1,6 +1,6 @@
 [KVD spec](../../README.md), section 03
 
-## 3. Lexical rules
+## 2. Lexical rules
 
 ### Encoding and line endings
 
@@ -26,13 +26,13 @@
 
 - Newlines are structural: they terminate lines and drive INDENT/DEDENT.
   Values never span lines except inside quoted strings (`\n` escape) and
-  `"""` blocks ([§5](05-grammar.md)).
+  `"""` blocks ([§04](04-grammar.md)).
 
 ### Strings
 
 - String values use double quotes (`"..."`), the single-quoted literal
   form (`'...'`, no escapes), or the multi-line block (`"""..."""`,
-  [§5](05-grammar.md)).
+  [§04](04-grammar.md)).
 - Non-ASCII characters in strings may be written literally or escaped as
   `\uXXXX` (Unicode code points U+0000 to U+FFFF). Code points above U+FFFF
   must be written literally as UTF-8; there is no surrogate-pair escape.
@@ -57,16 +57,17 @@
   or `:`) is written quoted with `"` or `'`; the quoted spelling denotes
   that literal key.
 - Dots are path separators, not key characters. A bare key can never
-  contain a dot.
+  contain a dot. Inside a dict entry (`=`), the entry key is opaque: a
+  quoted `"a.b.c/name"` is one key and dots never split it.
 
 ### Metakeys
 
 - A bare key matching `__name__` (double underscores, a lowercase letter,
   then lowercase letters/digits/`-`/`_`, double underscores) is a metakey.
 - Metakeys are reserved and allowed only at the document root. The only
-  defined metakey is `__schema__` ([§5](05-grammar.md)), which is retained
-  in the root map ([§9.1](09-operations.md)) but excluded from verification
-  ([§9.3](09-operations.md)). Any other bare metakey is an
+  defined metakey is `__schema__` ([§04](04-grammar.md)), which is retained
+  in the root ([§08.1](08-operations.md)) but excluded from verification
+  ([§08.3](08-operations.md)). Any other bare metakey is an
   `unknown-metakey` error. A quoted `"__name__"` is an ordinary literal
   key, not a metakey.
 
@@ -78,14 +79,20 @@
   end of line.
 - List marker: `- ` (dash plus exactly one space), sitting at the parent key's
   indent plus 2. A `-` alone at end of line introduces a nested list item
-  ([§5](05-grammar.md)). Any other standalone `-` is a `bad-list-marker`
+  ([§04](04-grammar.md)). Any other standalone `-` is a `bad-list-marker`
   error.
+- Dict marker: `= ` (equals plus exactly one space), sitting at the parent
+  key's indent plus 2. An `=` alone at end of line is a `bad-dict-marker`
+  error; dict entries always carry their key on the marker line
+  (`= "k": value`, [§04](04-grammar.md)). Any other standalone `=` is a
+  `bad-dict-marker` error.
 
 ### Empty collections and limits
 
-- `{}` is an empty mapping; `[]` is an empty list. They are atomic tokens.
+- `{}` is an empty dict; `[]` is an empty list. They are atomic tokens.
   `{`, `}`, `[`, `]` may not appear in any other context.
-- An empty document (or a comments-only document) parses as an empty mapping.
+- An empty document (or a comments-only document) parses as an empty trie
+  (no keys).
 - Max nesting depth: 100. The limit is configurable in implementations; it
   counts indent levels and dotted path segments together. There are no
   aliases, so there is no billion-laughs expansion class.
