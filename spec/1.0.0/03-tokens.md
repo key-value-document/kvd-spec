@@ -40,8 +40,9 @@ produces `"..."`.
   `8080:` is a key; `8080` alone is an int.
 - In value position, `type` tokens are accepted as bare strings. They are
   meaningful only in schema documents; in data documents they are strings
-  whose value is the type name. Unknown type names produce an `unknown-type`
-  verification error, not a parse error (§05).
+  whose value is the type name. A name that is not one of the six builtins
+  is a malformed schema at verification time (`VerifyError::SchemaMalformed`,
+  §05, §08.3), not a parse error and not a document violation.
 - `{}` and `[]` are atomic tokens; `{`, `}`, `[`, `]` in any other context
   are errors.
 - `=` is a token only as a dict entry marker at the start of a subtree

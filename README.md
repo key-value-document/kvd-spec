@@ -109,7 +109,7 @@ server:
 
 Rules:
 
-- Use 2 spaces per level. Tabs are never allowed.
+- Use 2 spaces per level. Tabs are allowed only inside quoted content, never for indentation.
 - Blank lines are fine anywhere.
 - Flat and nested forms can be mixed in one document.
 
@@ -126,7 +126,9 @@ Rules:
 | `{}`                | an empty dict            |
 | `[]`                | an empty list            |
 
-Text goes in double quotes. Numbers, `true`/`false`, and `null` stand alone. Anything else bare is an error, so dates, yes/no words, and version numbers must be quoted:
+Text goes in double quotes. Numbers, `true`/`false`, and `null` stand alone.
+Lowercase bare words (`yes`, `port`) also parse as strings in data; anything
+else bare (dates, `Yes`, versions) is an error, so quote them to be safe:
 
 ```kvd
 when: "2026-08-20"
@@ -170,7 +172,7 @@ greeting: """
 """
 ```
 
-Trailing newline rule: a closer alone on its line keeps a trailing newline; a closer at the end of the last content line does not. See [Values and types](spec/1.0.0/05-values.md) for the exact rule.
+Trailing newline rule: a closer alone on its line keeps a trailing newline; a closer at the end of the last content line does not. See [Grammar](spec/1.0.0/04-grammar.md) for the exact rule.
 
 ### 7. Comments, empty collections, and null
 
@@ -188,7 +190,9 @@ labels: {}
 search: []
 ```
 
-`null` denotes an explicitly unset value. Omit the key if the setting is not needed:
+`null` denotes an explicitly unset value. Without a schema it parses as
+untyped null; with a schema it requires `optional: true` (§05). Omit the key
+if the setting is not needed:
 
 ```kvd
 retries: null

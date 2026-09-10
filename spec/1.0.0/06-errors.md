@@ -5,7 +5,12 @@
 Every error carries a `line:col` position and a category. The grammar is
 deterministic enough that an invalid document has exactly one explanation.
 Parse errors come from reading the text; verification errors come from
-checking parsed data against a schema.
+checking parsed data against a schema. `line:col` is the offending line and
+the column where the offending token starts; for INDENT/DEDENT failures it
+is the line that required the indent change, column 1; for a missing
+terminator at EOF it is the last line's end. A `---` or `...` line is not a
+document separator (single document only, §09): its `-` is a
+`bad-list-marker` and its `.` an `unexpected-character`.
 
 ### Parse errors
 
@@ -45,9 +50,10 @@ a:
 Produced by the schema verifier as `Violation` values (path plus message),
 not as parse errors. Each carries the dotted path of the offending value.
 Schema-shape problems (quoted or numbered type leaf, bare `dict`/`list`
-leaf, descriptor missing its `type`, unknown type name, unknown constraint
-key, schema list with anything but exactly one element type) are reported
-as a malformed schema (§08.3), distinct from document violations:
+leaf, descriptor missing its `type`, unknown type name, unknown descriptor
+or constraint key, schema list with anything but exactly one element type)
+are reported as a malformed schema (§08.3), distinct from document
+violations:
 
 - **unknown key**: a data key has no counterpart in the schema
 - **missing key**: a required schema key is absent from the data

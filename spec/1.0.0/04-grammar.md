@@ -10,8 +10,9 @@ file, `SP{keycol}` means spaces up to the key's column.
 document  := pairs? EOF
 
 pairs     := pair (NL pair)*
-pair      := (metakey | path) ':' value
-path      := key ('.' key)*
+pair      := path ':' value            ; metakey allowed as path only at root
+path      := keyseg ('.' keyseg)*
+keyseg    := key | dquote | squote     ; quoted segs are literal, never metakey
 
 value     := ' ' scalar
            | ' ' '"""' NL triple      ; triple-quoted string (see below)
@@ -43,14 +44,21 @@ entry     := '= ' dkey ':' value
 dkey      := dquote | squote           ; opaque dict key: dots never split
 
 triple    := content-line* closer
+content-line := any line that is not the closer (escapes per `"..."`)
 closer    := SP{keycol} '"""' NL          ; standalone: trailing \n included
            | content-line '"""' NL        ; inline: no trailing \n
 ```
 
-Quoted keys (§02) may appear as any `key` segment in `path`; a quoted
-`"__name__"` segment is a literal key, never a metakey. `metakey` pairs are
-retained in the root; the same pattern anywhere else is a
-`metakey-outside-root` error. The parser needs only one token of lookahead.
+`SP{keycol}` is the exact run of spaces ending at the key's column (for a
+list-item `"""`, the marker's column). `content-line` excludes the closer
+forms above.
+
+Quoted keys (§02) may appear as any `keyseg` in `path`; a quoted
+`"__name__"` segment is a literal key, never a metakey. A bare `metakey`
+pair is allowed only at the document root: it is retained in the root and
+excluded from the data view before verification. The same bare pattern
+anywhere else (nested block, list item, dict entry) is a
+`metakey-outside-root` error.
 
 Dict entry keys (`dkey`) are always quoted and always opaque: `"a.b.c/name"`
 is one key. A bare word is never a dict key; write `= "k": v` even when `k`
@@ -83,7 +91,8 @@ server:
 `__schema__` is the only defined metakey. Values in schema position are a
 builtin type name, a descriptor block, a single-element list declaring its
 item type, a dict of any number of entries declaring per-key value types,
-or the empty literals `{}` / `[]`.
+or the empty literals `{}` / `[]`. A bare `dict`/`list` leaf is a malformed
+schema (use a `type: dict`/`type: list` descriptor or a `{}`/`[]` leaf).
 The builtin type names are `int`, `float`, `bool`, `str`, `dict`, `list`;
 `dict` and `list` appear only inside a descriptor's `type` key (they make a
 container optional/validatable). Numbers, booleans, `null`, and quoted
@@ -136,9 +145,9 @@ endpoints:
 
 ### Multi-line strings
 
-`"""` is the only multi-line string form. The opener must be followed by a
-newline (inline `"""x"""` is an error); content lines sit two columns past
-the key's column.
+`"""` is the only multi-line string form. The opener MUST be followed by a
+newline (inline `"""x"""` is an `unexpected-character` error); content lines
+MUST be indented at least two columns past the key's column.
 
 ```kvd
 key: """
@@ -151,7 +160,8 @@ Two closer forms exist. The position of `"""` controls whether a trailing newlin
 is included:
 
 - **Standalone closer**: `"""` alone on a line at exactly the key's column.
-  The string includes a trailing `\n`.
+  The string includes a trailing `\n`. Any other indentation is a
+  `bad-indent` error.
 - **Inline closer**: `"""` appended directly to the last content line.
   No trailing `\n` is added.
 
@@ -170,7 +180,9 @@ inline: """
   line two"""
 ```
 
-The common indentation of non-blank content lines is stripped. Blank lines
+The common indentation of non-blank content lines is stripped: the parser
+MUST compute the longest common space prefix of the non-blank content lines
+(at least the opener's content indent) and remove it. Blank lines
 are kept as empty lines and excluded from the common-indent computation.
 Escapes are processed per line (same rules as `"..."`). Because `"""` is
 escape-processed, backslashes in embedded scripts or SQL must be doubled

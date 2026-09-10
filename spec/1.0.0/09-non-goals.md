@@ -18,8 +18,10 @@ in any future version of KVD.
 - **Directives** (`%YAML`, `%TAG`). KVD has no directive layer.
 - **Flow collections** (`{...}`, `[...]` as inline maps/lists). The only
   uses of `{}` and `[]` are the empty-collection literals.
-- **Implicit coercion**. `yes`, `on`, `2026-08-20`, `0x1f`, `0o17`,
-  `1_000.5` are always errors. The value set is closed and explicit.
+- **Implicit coercion**. `2026-08-20`, `0x1f`, `0o17`,
+  `1_000.5`, `Yes` are always errors. Lowercase bare words matching the
+  `type` grammar (`yes`, `on`, `port`) parse as strings in data (§05),
+  never as another shape. The value set is closed and explicit.
 - **Block scalars** other than `"""` (`|`, `|-`, `>`, `>-`). The `"""`
   form covers all multi-line string needs.
 

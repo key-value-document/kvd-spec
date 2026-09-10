@@ -6,7 +6,10 @@ Data model: a document is a trie of node prefixes ending in keys; a key
 holds one value: a scalar, a list, or a dict. Nodes carry no value.
 Keys are usually written as dotted paths (`a.b.c: value`); an indented
 block is sugar for keys sharing a prefix.
-Insertion order is preserved. Metakeys are not part of the data model.
+Implementations MUST preserve insertion order. Metakeys are not data keys: `__schema__` is
+retained in the parsed root (§04, §08.1), excluded from the data view before
+verification, preserved by emit, and not addressable by `get`/`set`/`remove`
+path segments (§08.5).
 
 Shape typing uses a closed, predictable set. Nothing else is coerced:
 
@@ -92,9 +95,9 @@ To express absence in a schema-less document: omit the key entirely, or use
 `{}` / `[]` for an empty collection. When a schema is present, declare the
 key optional (`optional: true`) and write `null` or omit the key.
 
-The parser stores numbers verbatim: a number node is its exact written text
-tagged with its shape, with no conversion to a machine integer or float.
-Range and precision are the consumer's concern. `1e999` and
+The parser MUST store numbers verbatim: a number node is its exact written
+text tagged with its shape, with no conversion to a machine integer or
+float. Range and precision are the consumer's concern. `1e999` and
 `99999999999999999999` are valid values.
 
 ```kvd
@@ -121,10 +124,11 @@ reported as a malformed schema (§08.3).
 Verification is a separate pass over a parsed document; the parser itself is
 registry-free:
 
-- The schema mirrors the data document's structure: every data key must
-  appear in the schema and vice versa. Dotted keys and nested blocks are
-  interchangeable in the schema, exactly as in data. Intermediate nodes need
-  no type; only full keys carry types.
+- The schema mirrors the data document's structure outside dict values:
+  every data key outside a dict must appear in the schema and vice versa.
+  Dotted keys and nested blocks are interchangeable in the schema, exactly
+  as in data. Intermediate nodes need no type; only full keys carry types.
+  Inside a dict value the open-world rule below applies instead of mirroring.
 - A leaf type name constrains the corresponding data value's shape: `int` maps
   to int, `float` maps to float, `bool` maps to bool, `str` maps to string
   (any quoted form).
@@ -138,9 +142,11 @@ registry-free:
 - A dict declares any number of entries (`key:` plus `= "name": <type>`
   lines). Each declared key present in the data is checked against its
   type; declared keys may be absent (optional) and undeclared data keys
-  pass unchecked with any value type. Use a `type: dict` descriptor with a
-  required `element` type when every value must share one type (uniform).
-- Mismatches, unknown keys, missing keys, and unknown types are errors.
+  pass unchecked with any value type. Use a `type: dict` descriptor with an
+  optional `element` type when every value must share one type (uniform);
+  without `element` any dict value type passes.
+- Mismatches, unknown keys outside dict values, missing keys, and unknown
+  types are errors. Undeclared keys inside a dict value pass unchecked.
 
 A schema leaf is either a bare type name, the bare `{}`/`[]` collection
 literals, a single-element list, a dict of any number of entries, or a descriptor block.

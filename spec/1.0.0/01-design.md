@@ -6,12 +6,16 @@
    line; its value is a scalar on that line, a `"""`
    block, or an indented `-` / `=` subtree. The only exceptions are the
    empty-collection literals `{}` and `[]` (§04). There is exactly one way
-   to spell each thing.
+   to spell each thing, except that the six builtin type names stay bare
+   in canonical output (§08.2) while all other strings are double-quoted.
 2. Strict, fixed indentation: exactly 2 spaces per level. Tabs are illegal
    outside quoted strings (single-quoted literals, double-quoted strings,
    `"""` blocks).
-3. No implicit coercion beyond a closed shape set. `yes`, `on`,
-   `2026-08-20` are always errors and never silently become bools.
+3. No implicit coercion beyond a closed shape set. Date-like and other
+   non-shape bare tokens (`2026-08-20`, `0x1f`, `1_000.5`, `Yes`) are
+   errors and never silently become bools or strings. Lowercase bare words
+   matching the `type` grammar (`yes`, `on`, `port`) parse as strings in
+   data documents (§05); they never coerce to another shape.
 4. Data files are self-describing at the shape level; types are an optional
    companion schema, never inline annotations.
 5. Keys are usually dotted paths (`a.b.c: value`); indenting is sugar for
@@ -22,12 +26,14 @@
    markers compose for nested lists and dicts.
 7. No anchors/aliases, no merge keys, no tags, no directives, no
    multi-document streams, no duplicate keys. The only reserved namespace is
-   metakeys (`__...__`, [§02](02-lexical.md)). The only bare tokens with
-   non-string meaning in value position are integers and floats
-   (`42`, `1_000`, `0.5`), the literals `true`, `false`, and `null`, and
-   the empty-collection literals `{}` and `[]`. Quote them to get strings.
-   Bare type names (`int`, `float`, `bool`, `str`, `dict`, `list`) have
-   non-string meaning in schema position only ([§05](05-values.md)).
+   metakeys (`__...__`, [§02](02-lexical.md)). The only bare tokens permitted
+   in value position are integers and floats (`42`, `1_000`, `0.5`), the
+   literals `true`, `false`, and `null`, the empty-collection literals `{}`
+   and `[]`, and bare words matching the `type` grammar
+   (`[a-z][a-z0-9_-]*`). Bare type names (`int`, `float`, `bool`, `str`,
+   `dict`, `list`) have non-string meaning in schema position only
+   ([§05](05-values.md)); in data documents they parse as strings.
+   Quote a bare token to force the string spelling.
 
 Terms used throughout this spec: **document** (one file's content after
 parsing; a trie of node prefixes ending in keys), **node** (an interior

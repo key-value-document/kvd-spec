@@ -15,11 +15,13 @@
 - A tab anywhere outside a quoted string (single-quoted literal,
   double-quoted string, or `"""` block) is a `tab` error.
 - Blank lines are allowed anywhere between tokens and carry no indent
-  semantics. Trailing whitespace on any line is ignored.
+  semantics. The parser MUST ignore trailing whitespace on any line; the
+  emitter MUST NOT produce any (§08.2).
 
 ### Comments
 
 - `#` to end of line, allowed anywhere except inside a quoted string.
+  The parser MUST strip comments during lexing.
 - There are no block comments.
 
 ### Newlines and structure
@@ -35,8 +37,9 @@
   [§04](04-grammar.md)).
 - Non-ASCII characters in strings may be written literally or escaped as
   `\uXXXX` (Unicode code points U+0000 to U+FFFF). Code points above U+FFFF
-  must be written literally as UTF-8; there is no surrogate-pair escape.
-  Surrogate escapes (`\ud800` to `\udfff`) are always errors.
+  have no escape and MUST be written literally as UTF-8; there is no
+  surrogate-pair escape. Surrogate escapes (`\ud800` to `\udfff`) are always
+  errors.
 
 ### Numbers
 
@@ -93,6 +96,10 @@
   `{`, `}`, `[`, `]` may not appear in any other context.
 - An empty document (or a comments-only document) parses as an empty trie
   (no keys).
-- Max nesting depth: 100. The limit is configurable in implementations; it
-  counts indent levels and dotted path segments together. There are no
-  aliases, so there is no billion-laughs expansion class.
+- Max nesting depth: default 100. An implementation MAY make the limit
+  configurable but MUST enforce a limit defaulting to 100. Depth counts
+  every nesting step together: each indent level, each dotted path segment
+  beyond the first, and each list/dict level under `-`/`=`. Depth is checked
+  when a nested value starts; exceeding it is a `depth-limit` error at that
+  line, column 1. There are no aliases, so there is no billion-laughs
+  expansion class.

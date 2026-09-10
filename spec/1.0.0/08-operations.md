@@ -14,13 +14,16 @@ values are scalars, lists, or dicts (§04).
 **Errors:** parse errors carrying a `line:col` position and a category from
 §06. A document with any parse error has no defined value.
 
-Normalization performed during parse:
+Normalization performed during parse (the parser MUST perform all four;
+the emitter MUST NOT produce comments or trailing whitespace):
 
 - CRLF is normalized to LF.
 - Comments and trailing whitespace are discarded.
 - Dotted keys are expanded into node prefixes.
-- The `__schema__` metakey, if present, is validated and kept as an ordinary
-  entry of the root.
+- The `__schema__` metakey, if present, is validated and kept as an entry
+  of the root parse tree. It is excluded from the data view before
+  verification (§08.3), preserved by emit (§08.2), and not addressable by
+  `get`/`set`/`remove` paths (§08.5).
 
 The output is a lossless node tree: re-emitting it (§08.2) produces canonical
 KVD text that parses back to an equal tree.
@@ -55,11 +58,13 @@ Canonical form rules:
 - Dict entry keys are always double-quoted, even when they look bare.
 - Indentation is exactly 2 spaces per level.
 - List items are prefixed with `- `; dict entries are prefixed with `= `.
-- No trailing whitespace; exactly one trailing newline.
-- No comments are emitted.
+- No trailing whitespace; exactly one trailing newline. (Parse accepts a
+  missing final newline per §02; emit always writes one.)
+- No comments are emitted: the emitter MUST NOT produce any.
 
-Emit is deterministic: equal node trees produce identical text. Round-trip
-invariant: `emit(parse(text))` equals `emit(parse(emit(parse(text))))`.
+Emit is deterministic: equal node trees MUST produce identical text.
+Round-trip invariant: `emit(parse(text))` equals
+`emit(parse(emit(parse(text))))`.
 
 ### 9.3 Verify
 
@@ -70,9 +75,11 @@ the dotted path of the offending node and a human-readable message (§06).
 **Errors:** `verify` returns `VerifyError`. When either input fails to parse
 it is `ParseDoc` / `ParseSchema`. Once both parse, a *malformed schema* (for example a
 quoted or numbered type leaf, a bare `dict`/`list` leaf, a descriptor missing its
-`type`, an unknown type name, an unknown constraint key, or a schema list
-with anything but exactly one element type) is reported as
-`VerifyError::SchemaMalformed`.
+`type`, an unknown type name, an unknown descriptor or constraint key, or a
+schema list with anything but exactly one element type) is reported as
+`VerifyError::SchemaMalformed`. A 1.0 verifier MUST report the §11 `merge`
+and `key` descriptor keys as unknown (malformed schema); they become valid
+only under the future merge operation.
 This is distinct from `VerifyError::Violations`, which covers a well-formed schema
 applied to a non-conforming document. A self-describing document can be checked
 against its own `__schema__` entry with `verify_embedded` (§08.1).
@@ -80,14 +87,21 @@ against its own `__schema__` entry with `verify_embedded` (§08.1).
 Verification is a separate pass, never part of parse. A document that parses
 without error may still fail verification.
 
-The verifier walks the schema tree and for every path checks:
+The verifier walks the schema tree in schema insertion order and for every
+path checks:
 
-- The data has no keys absent from the schema.
+- Outside dict values, the data has no keys absent from the schema.
 - All required schema keys are present in the data.
 - Each scalar's shape matches its declared builtin type.
-- `null` only appears under an optional type (`optional: true`).
-- Each present value satisfies its `validation` constraints, if any
+- `null` only appears under an optional type (`optional: true`); a `null`
+  under a required type is a violation before any constraint check.
+- Each present non-`null` value satisfies its `validation` constraints, if any
   ([§10](10-validation.md)); `null`/absent values skip constraint checks.
+
+Violations are reported in walk order (schema insertion order, lists in index
+order). Each violation carries the dotted path of the offending node and a
+human-readable message (§06); the message text after the path is
+implementation-defined but MUST name the failed rule.
 
 ### 9.4 Typed round-trip (serde)
 

@@ -19,8 +19,8 @@ block. The descriptor is an indented block with two reserved keys:
 
 - `type` (required): a bare type name (`int`, `float`, `bool`, `str`,
   `dict`, `list`). For `type: list` a required `element` key gives the
-  (uniform) item type; for `type: dict` a required `element` key gives the
-  (uniform) value type.
+  (uniform) item type; for `type: dict` an optional `element` key gives the
+  (uniform) value type (absent means any value type passes).
 - `validation` (optional): an indented block of constraint keys.
 
 ```kvd
@@ -62,8 +62,8 @@ Any other key in a leaf block is treated as nested node prefixes, not as a
 constraint. This keeps the rule from [§05](05-values.md) unchanged: a leaf
 block with `type` is a descriptor; a leaf block without `type` is nested
 prefixes. The reserved keys `type` and `validation` have meaning only inside a
-descriptor. A `type: dict` descriptor requires an `element` type for the
-dict values; a typed node subtree is written as nested prefixes (a block
+descriptor. A `type: dict` descriptor accepts an optional `element` type for
+the dict values; a typed node subtree is written as nested prefixes (a block
 without a `type` key).
 
 ### Constraints by type
@@ -80,16 +80,16 @@ without a `type` key).
 | `list`, `dict` | `min_len` | collection length (item / entry count) >= min_len |
 | `list`, `dict` | `max_len` | collection length (item / entry count) <= max_len |
 
-Numeric bounds are compared on the value's written text interpreted as the
-declared numeric type; `min`/`max` are inclusive, `exclusive_min`/
-`exclusive_max` are exclusive. For `int` bounds the bound values must be
-ints; for `float` bounds they may be ints or floats. `min_len`/`max_len`
-must be non-negative ints. `pattern` must be a string holding a regular
+Numeric bounds are compared on the mathematical value of the value's written
+text interpreted as the declared numeric type; `min`/`max` are inclusive,
+`exclusive_min`/`exclusive_max` are exclusive. For `int` bounds the bound
+values must be ints; for `float` bounds they may be ints or floats.
+`min_len`/`max_len` must be non-negative ints (a negative length is a
+malformed schema). `pattern` must be a string holding a regular
 expression matched against the full string value (equivalent to anchoring
-the pattern with `^` and `$`). The pattern dialect is a Perl/PCRE-style
-regular expression restricted to the backtracking-free subset (no
-look-around, no backreferences). This is the syntax of RE2 and the Rust
-`regex` crate. The exact engine is an implementation detail. String length
+the pattern with `^` and `$`). The pattern dialect is the RE2 syntax
+(backtracking-free: no look-around, no backreferences), with the matching
+semantics of the Rust `regex` crate. String length
 is counted in Unicode scalar values (characters, not bytes). An unknown
 constraint key for a given type (for example `pattern` on an `int`), or a
 constraint value of the wrong shape, is a malformed schema (§08.3).
