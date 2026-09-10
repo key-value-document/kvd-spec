@@ -80,6 +80,7 @@ a.b.d: "y"
 A path used as both a value and a prefix is an error:
 
 ```kvd
+# error: leaf-interior-conflict
 a: 1
 a.b: 2
 ```
