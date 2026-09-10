@@ -82,8 +82,8 @@ server:
 
 `__schema__` is the only defined metakey. Values in schema position are a
 builtin type name, a descriptor block, a single-element list declaring its
-item type, a single-entry dict declaring its value type, or the empty
-literals `{}` / `[]`.
+item type, a dict of any number of entries declaring per-key value types,
+or the empty literals `{}` / `[]`.
 The builtin type names are `int`, `float`, `bool`, `str`, `dict`, `list`;
 `dict` and `list` appear only inside a descriptor's `type` key (they make a
 container optional/validatable). Numbers, booleans, `null`, and quoted

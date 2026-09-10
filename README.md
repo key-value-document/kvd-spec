@@ -240,6 +240,14 @@ server:
   host: null
 ```
 
+Dict schemas declare per-key value types. Declared keys present in the data are checked; declared keys may be absent and undeclared data keys pass with any value type:
+
+```kvd
+metrics:
+  = "errors/total": int
+  = "a.b.c/name": float
+```
+
 See [Validation constraints](spec/1.0.0/10-validation.md) for the full list.
 
 ### 9. Advanced nesting

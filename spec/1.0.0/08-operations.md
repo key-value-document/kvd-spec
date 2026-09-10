@@ -70,9 +70,8 @@ the dotted path of the offending node and a human-readable message (§06).
 **Errors:** `verify` returns `VerifyError`. When either input fails to parse
 it is `ParseDoc` / `ParseSchema`. Once both parse, a *malformed schema* (for example a
 quoted or numbered type leaf, a bare `dict`/`list` leaf, a descriptor missing its
-`type`, an unknown type name, an unknown constraint key, a schema list
-with anything but exactly one element type, or a schema dict with anything
-but exactly one entry) is reported as
+`type`, an unknown type name, an unknown constraint key, or a schema list
+with anything but exactly one element type) is reported as
 `VerifyError::SchemaMalformed`.
 This is distinct from `VerifyError::Violations`, which covers a well-formed schema
 applied to a non-conforming document. A self-describing document can be checked

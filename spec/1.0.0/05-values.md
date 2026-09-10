@@ -135,19 +135,15 @@ registry-free:
   single-element list form (`key:` plus one `- <element>` line) or with a
   `type: list` descriptor carrying a required `element` type; every item in
   the data list must match that single `element` type (uniform).
-- A dict with a checked value type is declared either with the
-  single-entry dict form (`key:` plus one `= "example": <element>` line;
-  the example key is a placeholder, any dict key matches) or with a
-  `type: dict` descriptor carrying a required `element` type; every value in
-  the data dict must match that single `element` type (uniform). Dict keys
-  are never enumerated in the schema.
-- A `type: dict` descriptor accepts any dict (typed dicts use the
-  single-entry form). Unlike the bare `{}`/`[]` leaves, `type: dict` and
-  `type: list` descriptors may carry `optional: true` and `validation`.
+- A dict declares any number of entries (`key:` plus `= "name": <type>`
+  lines). Each declared key present in the data is checked against its
+  type; declared keys may be absent (optional) and undeclared data keys
+  pass unchecked with any value type. Use a `type: dict` descriptor with a
+  required `element` type when every value must share one type (uniform).
 - Mismatches, unknown keys, missing keys, and unknown types are errors.
 
 A schema leaf is either a bare type name, the bare `{}`/`[]` collection
-literals, a single-element list, a single-entry dict, or a descriptor block.
+literals, a single-element list, a dict of any number of entries, or a descriptor block.
 The bare forms are required; the descriptor form adds `optional: true`
 and/or `validation`. An optional key may be absent, present with a value of
 the declared type, or present as `null`. A required key (no `optional: true`)
@@ -179,13 +175,13 @@ then be `null` (absence does not apply to values).
 
 ```kvd
 metrics:
-  = "example": int
+  = "errors/total": int
 ```
 
 The compact `- <element>` list form above is sugar for the explicit
 `type: list` descriptor, which additionally allows `optional` and
-`validation` on the container itself. The compact `= "example": <element>`
-dict form is sugar for the explicit `type: dict` descriptor:
+`validation` on the container itself. A `type: dict` descriptor with an
+`element` type enforces one uniform value type instead:
 
 ```kvd
 items:

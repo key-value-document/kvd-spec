@@ -46,8 +46,7 @@ Produced by the schema verifier as `Violation` values (path plus message),
 not as parse errors. Each carries the dotted path of the offending value.
 Schema-shape problems (quoted or numbered type leaf, bare `dict`/`list`
 leaf, descriptor missing its `type`, unknown type name, unknown constraint
-key, schema list with anything but exactly one element type, schema dict
-with anything but exactly one entry) are reported
+key, schema list with anything but exactly one element type) are reported
 as a malformed schema (§08.3), distinct from document violations:
 
 - **unknown key**: a data key has no counterpart in the schema

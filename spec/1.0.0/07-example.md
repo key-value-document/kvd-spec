@@ -53,9 +53,9 @@ tls:
 ```
 
 Schema (`app.schema.kvd`): a bare tree whose values are builtin types. The
-list-of-strings uses the single-element list form; the dicts use the
-single-entry form (the example key is a placeholder); the open dict and list
-use the bare `{}`/`[]` leaves:
+list-of-strings uses the single-element list form; the dicts declare
+per-key value types (declared keys may be absent, undeclared data keys pass
+unchecked); the open list uses the bare `[]` leaf:
 
 ```kvd
 app:
@@ -67,9 +67,10 @@ app:
   tags:
     - str
   labels:
-    = "example": str
+    = "team": str
   metrics:
-    = "example": float
+    = "a.b.c/name": float
+    = "errors/total": int
   limits:
     cpu: float
   endpoints:
@@ -79,7 +80,7 @@ app:
     -
       - int
   groups:
-    = "example":
+    = "team-a":
       - str
   dns:
     search: []
