@@ -111,5 +111,3 @@ server:
 ### No aliases, tags, or streams
 
 KVD has no anchors, aliases, merge keys, tags, directives, multi-document streams, or duplicate keys. The only reserved namespace is metakeys (`__...__`), defined in §02.
-
-Terms used throughout this spec are document, node, key, value, scalar, shape, type, schema, and canonical form. A document is one file's content after parsing, a trie of node prefixes ending in keys. A node is an interior prefix such as `path.to` in `path.to.key` and carries no value, while a key is a full path holding a value. A value is a scalar, a list, or a dict, and a scalar is a single int, float, bool, string, or null value. A shape is the runtime kind of a value, a type is a schema declaration such as `int`, a schema is a companion document of allowed keys and types, and a canonical form is the single standard spelling `emit` produces, defined in §08.2.
