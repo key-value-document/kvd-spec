@@ -112,7 +112,7 @@ Types are declared in a schema, never inline. The builtin type set is closed:
 `int`, `float`, `bool`, `str`, `dict`, `list`. There are no custom types. The
 first four are scalar types; `dict` and `list` are container types and may
 appear only as the `type` of a descriptor. They give a dict or list an
-`optional` or `validation` slot (see below).
+`optional`, `description`, `deprecated`, or `validation` slot (see below).
 
 Type names are bare (unquoted) words in schema position only. A name that is
 not one of the six builtins is an `unknown-type` error at verification time,
@@ -147,8 +147,8 @@ registry-free:
 
 A schema leaf is either a bare type name, the bare `{}`/`[]` collection
 literals, a single-element list, a dict of any number of entries, or a descriptor block.
-The bare forms are required; the descriptor form adds `optional: true`
-and/or `validation`. An optional key may be absent, present with a value of
+The bare forms are required; the descriptor form adds `optional: true`,
+`description`, `deprecated`, and/or `validation`. An optional key may be absent, present with a value of
 the declared type, or present as `null`. A required key (no `optional: true`)
 that is absent is a missing-key error and `null` is an error (`null` requires
 `optional: true`). `optional` applies to any descriptor, including
@@ -182,7 +182,7 @@ metrics:
 ```
 
 The compact `- <element>` list form above is sugar for the explicit
-`type: list` descriptor, which additionally allows `optional` and
+`type: list` descriptor, which additionally allows `optional`, `description`, `deprecated`, and
 `validation` on the container itself. A `type: dict` descriptor with an
 `element` type enforces one uniform value type instead:
 

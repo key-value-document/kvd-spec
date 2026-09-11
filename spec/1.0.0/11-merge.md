@@ -48,9 +48,10 @@ doc = merge(doc, cliOverrides)
 ## 11.3 Policy model
 
 Each field's merge behavior is taken from its schema descriptor's `merge`
-attribute. The descriptor already carries `type`, `optional`, and constraints
+attribute. The descriptor already carries `type`, `optional`, `description`,
+`deprecated`, and constraints
 (§05); `merge` is an additional, optional attribute. Allowed descriptor keys
-in a merge-aware schema are `type`, `optional`, `validation`, `element`,
+in a merge-aware schema are `type`, `optional`, `description`, `deprecated`, `validation`, `element`,
 plus `merge` and (for `by-key` only) `key`. A `by-key` descriptor without
 `key`, or a `key` on any other strategy, is a malformed merge descriptor.
 

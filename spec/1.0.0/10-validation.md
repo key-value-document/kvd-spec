@@ -15,18 +15,26 @@ the data.
 ### Descriptor form
 
 A schema leaf may be written either as a bare type name or as a descriptor
-block. The descriptor is an indented block with two reserved keys:
+block. The descriptor is an indented block with reserved keys:
 
 - `type` (required): a bare type name (`int`, `float`, `bool`, `str`,
   `dict`, `list`). For `type: list` a required `element` key gives the
   (uniform) item type; for `type: dict` an optional `element` key gives the
   (uniform) value type (absent means any value type passes).
+- `description` (optional): a string documenting the field. It has no effect
+  on verification; verifiers MUST accept any string value and ignore it.
+- `deprecated` (optional): an indented block marking the field as deprecated.
+  It has no effect on verification; verifiers MUST accept and ignore it.
+  Allowed sub-keys, both optional strings: `reason` (why it is deprecated /
+  what to use instead), `since` (version when deprecated, e.g. `"1.0"`).
+  An unknown sub-key or a non-string sub-value is a malformed schema.
 - `validation` (optional): an indented block of constraint keys.
 
 ```kvd
 app:
   port:
     type: int
+    description: "port to listen on"
     optional: true
     validation:
       min: 0
@@ -40,10 +48,16 @@ app:
   retries:
     type: int
     optional: true
+  legacy_port:
+    type: int
+    optional: true
+    deprecated:
+      reason: "use port instead"
+      since: "1.0"
 ```
 
 The bare form `port: int` (required) is exactly equivalent to a descriptor
-with only a `type` key and no `optional`/`validation` blocks. A descriptor
+with only a `type` key and no `optional`/`description`/`deprecated`/`validation` blocks. A descriptor
 with a `validation` block but no `type` key is a malformed schema:
 `type` is required. Optionality is declared with `optional: true` (§05),
 not a `?` suffix.
@@ -61,7 +75,7 @@ A schema leaf block is a descriptor if and only if it contains a `type` key.
 Any other key in a leaf block is treated as nested node prefixes, not as a
 constraint. This keeps the rule from [§05](05-values.md) unchanged: a leaf
 block with `type` is a descriptor; a leaf block without `type` is nested
-prefixes. The reserved keys `type` and `validation` have meaning only inside a
+prefixes. The reserved keys `type`, `description`, `deprecated`, and `validation` have meaning only inside a
 descriptor. A `type: dict` descriptor accepts an optional `element` type for
 the dict values; a typed node subtree is written as nested prefixes (a block
 without a `type` key).
