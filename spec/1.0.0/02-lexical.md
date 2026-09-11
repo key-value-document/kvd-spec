@@ -63,16 +63,13 @@
   contain a dot. Inside a dict entry (`=`), the entry key is opaque: a
   quoted `"a.b.c/name"` is one key and dots never split it.
 
-### Metakeys
+### No metakeys
 
-- A bare key matching `__name__` (double underscores, a lowercase letter,
-  then lowercase letters/digits/`-`/`_`, double underscores) is a metakey.
-- Metakeys are reserved and allowed only at the document root. The only
-  defined metakey is `__schema__` ([§04](04-grammar.md)), which is retained
-  in the root ([§08.1](08-operations.md)) but excluded from verification
-  ([§08.3](08-operations.md)). Any other bare metakey is an
-  `unknown-metakey` error. A quoted `"__name__"` is an ordinary literal
-  key, not a metakey.
+- There are no metakeys and no reserved namespace. Schemas live in
+  separate files and are never embedded in data documents ([§04](04-grammar.md)).
+- A bare `__name__` pattern does not match the `key` grammar (bare keys
+  may not start or end with `-`/`_`); bare it is an
+  `unexpected-character` error. A quoted `"__name__"` is an ordinary key.
 
 ### Separators and markers
 

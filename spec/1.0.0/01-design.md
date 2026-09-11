@@ -26,7 +26,7 @@ Lists are marked with `-` entries and dicts with `=` entries, and the two marker
 
 ### Nesting and indentation
 
-Keys can form a tree. A dotted key such as `a.b.c` nests inside its prefixes, so `a` and `a.b` are nodes and `a.b.c` is the key. A node is a shared prefix and carries no value. Only the full key holds a value, and any path collision is a hard error. An indented block is sugar for keys sharing a prefix: both spellings expand to the same tree.
+Keys can form a trie[^trie]. A dotted key such as `a.b.c` nests inside its prefixes, so `a` and `a.b` are nodes and `a.b.c` is the key. A node is a shared prefix and carries no value. Only the full key holds a value, and any path collision is a hard error. An indented block is sugar for keys sharing a prefix: both spellings expand to the same tree.
 
 The flat spelling writes each full path on its own line:
 
@@ -110,4 +110,8 @@ server:
 
 ### Aliases, tags, or streams
 
-KVD has no anchors, aliases, merge keys, tags, directives, multi-document streams, or duplicate keys. The only reserved namespace is metakeys (`__...__`), defined in §02.
+KVD has no anchors, aliases, merge keys, tags, directives, multi-document streams, duplicate keys, or metakeys. There is no reserved namespace.
+
+---
+
+[^trie]: A trie (from *retrieval*, pronounced "try") is a prefix tree: keys sharing a prefix share the nodes for that prefix. `a.b.c` and `a.b.d` share the nodes `a` and `a.b`, then branch.

@@ -24,15 +24,13 @@ each call site.
 ## 11.2 Operation
 
 ```text
-merge(base, overlay)            # uses base's embedded __schema__
-merge(base, overlay, schema)    # uses an explicit schema
+merge(base, overlay, schema)
 ```
 
 - **base**: the lower-precedence document (for example chart defaults).
 - **overlay**: the higher-precedence document (for example user values).
 - **schema** (optional): the schema whose per-field `merge` descriptors
-  drive the behavior. If omitted, the base document's `__schema__` metakey is
-  used (the `merge_embedded` form, analogous to `verify_embedded` in §08.3); if neither is present, the global default applies
+  drive the behavior. If omitted, the global default applies
   to every field.
 
 **Output:** a new document that is the merge of `base` and `overlay`. `base` and
@@ -57,24 +55,24 @@ plus `merge` and (for `by-key` only) `key`. A `by-key` descriptor without
 `key`, or a `key` on any other strategy, is a malformed merge descriptor.
 
 ```kvd
-__schema__:
-  database:
-    type: dict
-    element: str
-    merge: deep
-  ports:
-    type: list
-    element: int
-    merge: append
-  containers:
-    type: list
-    element:
-      name: str
-    merge: by-key
-    key: name
-  name:
-    type: str
-    merge: replace
+# schema fragment (schema/schema.kvd)
+database:
+  type: dict
+  element: str
+  merge: deep
+ports:
+  type: list
+  element: int
+  merge: append
+containers:
+  type: list
+  element:
+    name: str
+  merge: by-key
+  key: name
+name:
+  type: str
+  merge: replace
 ```
 
 ### Strategies

@@ -2,14 +2,11 @@
 
 ## 5. Values and types
 
-Data model: a document is a trie of node prefixes ending in keys; a key
+A document is a trie[^trie] of node prefixes ending in keys; a key
 holds one value: a scalar, a list, or a dict. Nodes carry no value.
 Keys are usually written as dotted paths (`a.b.c: value`); an indented
 block is sugar for keys sharing a prefix.
-Implementations MUST preserve insertion order. Metakeys are not data keys: `__schema__` is
-retained in the parsed root (§04, §08.1), excluded from the data view before
-verification, preserved by emit, and not addressable by `get`/`set`/`remove`
-path segments (§08.5).
+Implementations MUST preserve insertion order.
 
 Shape typing uses a closed, predictable set. Nothing else is coerced:
 
@@ -24,8 +21,8 @@ Shape typing uses a closed, predictable set. Nothing else is coerced:
 | `{}`                              | empty dict |
 | `[]`                              | empty list |
 | indented pairs                    | node prefixes |
-| `- ` items                        | list     |
-| `= ` entries                      | dict     |
+| `-` items                        | list     |
+| `=` entries                      | dict     |
 
 All string values are double-quoted, single-quoted literal, or the `"""`
 block form. The only bare (unquoted) tokens permitted in value position
@@ -213,3 +210,9 @@ regular-expression patterns are described in [§10](10-validation.md).
 ### Multi-line strings
 
 The `"""` block form is defined in [§04](04-grammar.md).
+
+---
+
+[^trie]: A trie (from *retrieval*, pronounced "try") is a prefix tree: keys
+sharing a prefix share the nodes for that prefix. `a.b.c` and `a.b.d`
+share the nodes `a` and `a.b`, then branch.

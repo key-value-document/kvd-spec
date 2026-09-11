@@ -28,8 +28,6 @@ Produced by the parser from document text:
 | `leaf-interior-conflict` | A path is used as both a leaf value and an interior node |
 | `bad-path` | A dotted path has an empty segment, a leading dot, or a trailing dot |
 | `unterminated` | A `"..."` string or `"""` block has no closing delimiter |
-| `unknown-metakey` | A `__name__` key is not a defined metakey |
-| `metakey-outside-root` | A metakey appears outside the document root |
 | `depth-limit` | Nesting exceeds the maximum depth (default 100) |
 | `unexpected-character` | A character or token is not valid in this position |
 

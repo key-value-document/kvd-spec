@@ -14,16 +14,12 @@ values are scalars, lists, or dicts (§04).
 **Errors:** parse errors carrying a `line:col` position and a category from
 §06. A document with any parse error has no defined value.
 
-Normalization performed during parse (the parser MUST perform all four;
+Normalization performed during parse (the parser MUST perform all three;
 the emitter MUST NOT produce comments or trailing whitespace):
 
 - CRLF is normalized to LF.
 - Comments and trailing whitespace are discarded.
 - Dotted keys are expanded into node prefixes.
-- The `__schema__` metakey, if present, is validated and kept as an entry
-  of the root parse tree. It is excluded from the data view before
-  verification (§08.3), preserved by emit (§08.2), and not addressable by
-  `get`/`set`/`remove` paths (§08.5).
 
 The output is a lossless node tree: re-emitting it (§08.2) produces canonical
 KVD text that parses back to an equal tree.
@@ -54,7 +50,7 @@ Canonical form rules:
 - Multi-line strings use `"""` blocks.
 - Keys are emitted bare when they satisfy the key grammar (§03); otherwise
   they are double-quoted so they round-trip (for example
-  `"app.kubernetes.io/name"`). A quoted `"__name__"` stays a literal key.
+  `"app.kubernetes.io/name"`).
 - Dict entry keys are always double-quoted, even when they look bare.
 - Indentation is exactly 2 spaces per level.
 - List items are prefixed with `- `; dict entries are prefixed with `= `.
@@ -81,8 +77,7 @@ schema list with anything but exactly one element type) is reported as
 and `key` descriptor keys as unknown (malformed schema); they become valid
 only under the future merge operation.
 This is distinct from `VerifyError::Violations`, which covers a well-formed schema
-applied to a non-conforming document. A self-describing document can be checked
-against its own `__schema__` entry with `verify_embedded` (§08.1).
+applied to a non-conforming document.
 
 Verification is a separate pass, never part of parse. A document that parses
 without error may still fail verification.

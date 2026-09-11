@@ -10,7 +10,6 @@ NL, INDENT, DEDENT, EOF
 
 key       := [A-Za-z0-9]
            | [A-Za-z0-9] [A-Za-z0-9_-]* [A-Za-z0-9]   ; no dots, no quotes
-metakey   := "__" [a-z] [a-z0-9_-]* "__"
 
 digit     := [0-9]
 int       := [+-]? "0"
@@ -36,7 +35,7 @@ It is accepted for compatibility but is not canonical: `emit` always
 produces `"..."`.
 
 **Disambiguation:**
-- In key position, `metakey` wins over `key`; `key` wins over `int`/`float`.
+- In key position, `key` wins over `int`/`float`.
   `8080:` is a key; `8080` alone is an int.
 - In value position, `type` tokens are accepted as bare strings. They are
   meaningful only in schema documents; in data documents they are strings

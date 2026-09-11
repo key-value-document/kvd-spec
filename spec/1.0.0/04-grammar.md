@@ -10,9 +10,9 @@ file, `SP{keycol}` means spaces up to the key's column.
 document  := pairs? EOF
 
 pairs     := pair (NL pair)*
-pair      := path ':' value            ; metakey allowed as path only at root
+pair      := path ':' value
 path      := keyseg ('.' keyseg)*
-keyseg    := key | dquote | squote     ; quoted segs are literal, never metakey
+keyseg    := key | dquote | squote
 
 value     := ' ' scalar
            | ' ' '"""' NL triple      ; triple-quoted string (see below)
@@ -54,11 +54,7 @@ list-item `"""`, the marker's column). `content-line` excludes the closer
 forms above.
 
 Quoted keys (§02) may appear as any `keyseg` in `path`; a quoted
-`"__name__"` segment is a literal key, never a metakey. A bare `metakey`
-pair is allowed only at the document root: it is retained in the root and
-excluded from the data view before verification. The same bare pattern
-anywhere else (nested block, list item, dict entry) is a
-`metakey-outside-root` error.
+`"__name__"` segment is an ordinary key like any other.
 
 Dict entry keys (`dkey`) are always quoted and always opaque: `"a.b.c/name"`
 is one key. A bare word is never a dict key; write `= "k": v` even when `k`
@@ -67,9 +63,9 @@ looks bare. The `=` marker always carries its entry on the same line; an
 
 ### Schema documents
 
-A schema mirrors a data document's structure with builtin type names in place
-of values. A standalone schema file (by convention `name.schema.kvd`) is a
-bare KVD tree with no metakeys:
+A schema is a separate document that mirrors a data document's structure
+with builtin type names in place of values. A schema file (by convention
+`name.schema.kvd`) is a bare KVD tree:
 
 ```kvd
 # app.schema.kvd
@@ -78,17 +74,7 @@ server:
   host: str
 ```
 
-A data file may embed its schema under `__schema__`:
-
-```kvd
-__schema__:
-  server:
-    port: int
-server:
-  port: 8080
-```
-
-`__schema__` is the only defined metakey. Values in schema position are a
+Schemas are never embedded in data documents. Values in schema position are a
 builtin type name, a descriptor block, a single-element list declaring its
 item type, a dict of any number of entries declaring per-key value types,
 or the empty literals `{}` / `[]`. A bare `dict`/`list` leaf is a malformed
@@ -99,9 +85,6 @@ container optional/validatable). Numbers, booleans, `null`, and quoted
 strings are malformed-schema errors in schema position. A type name is
 written bare; optionality is declared with `optional: true` in a descriptor
 block. See [§05](05-values.md).
-
-Metakeys are excluded from the data tree before verification, so an embedded
-schema never appears as a data key.
 
 ### Structural rules
 
