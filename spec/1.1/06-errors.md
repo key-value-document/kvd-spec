@@ -58,5 +58,7 @@ violations:
 - **schema mismatch**: a value's shape does not match its declared type
 - **unknown type**: a schema leaf names a type that is not a builtin
 - **null without optional type**: `null` appears under a non-optional type
+- **invalid bytes**: a `bytes`-typed value's text is not valid padded base64
+  ([§05](05-values.md))
 - **constraint**: a value violates a declared constraint
   (range, length, or pattern); see [§09](09-validation.md)

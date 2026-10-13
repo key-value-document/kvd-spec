@@ -109,9 +109,11 @@ port: null
 ### Schemas and types
 
 Types are declared in a schema, never inline. The builtin type set is closed:
-`int`, `float`, `bool`, `str`, `dict`, `list`. There are no custom
-types. The first four are scalar types; `dict` and `list` are container types and may
-appear only as the `type` of a descriptor. They give a dict or list an
+`int`, `float`, `bool`, `str`, `bytes`, `dict`, `list`. There are no custom
+types. The first five are scalar types; `dict` and `list` are container types and may
+appear only as the `type` of a descriptor. `bytes` is a schema-level type with
+no token of its own (see *Binary data* below); like `null`, it is meaningful
+only against a schema. They give a dict or list an
 `optional`, `description`, `deprecated`, or `validation` slot (see below).
 
 Type names are bare (unquoted) words in schema position only. A name that is
@@ -128,7 +130,8 @@ registry-free:
   Inside a dict value the open-world rule below applies instead of mirroring.
 - A leaf type name constrains the corresponding data value's shape: `int` maps
   to int, `float` maps to float, `bool` maps to bool, `str` maps to string
-  (any quoted form).
+  (any quoted form), and `bytes` maps to string (any quoted form) whose text
+  is valid padded base64 (*Binary data* below).
   A `{}` leaf accepts any dict (empty or not) and applies no checks to its
   contents; a `[]` leaf accepts any list (empty or not) and applies no
   checks to its items. These bare `{}`/`[]` leaves are always required.
@@ -206,6 +209,141 @@ port: port
 
 Optional per-value constraints such as numeric ranges, string/list lengths, and
 regular-expression patterns are described in [§09](09-validation.md).
+
+### Binary data: `bytes`
+
+**Status: new in 1.1.** `bytes` is a **schema-level** type. It adds no token to
+the data grammar and no shape to the parser: a key declared `bytes` holds an
+ordinary quoted string whose **text is padded base64** (RFC 4648 §4, standard
+alphabet `A-Za-z0-9+/` with `=` padding). The parser yields a `Str` scalar and
+the schema is what makes it binary.
+
+```kvd
+# data (tls.kvd)
+tls.cert: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A"
+tls.key: ""
+tls.chain: null
+```
+
+```kvd
+# schema (tls.schema.kvd)
+tls:
+  cert:
+    type: bytes
+    validation:
+      max_len: 4096
+  key:
+    type: bytes
+    optional: true
+  chain:
+    type: bytes
+    optional: true
+```
+
+Rules:
+
+- **No new syntax.** There is no `b"..."` literal, no `0x...` literal, and no
+  inline type marker ([§01](01-design.md)). Binary data is text until a
+  schema declares it `bytes`, which keeps the shape set closed and keeps type
+  annotations out of the value syntax.
+- **Quoting is required.** The value MUST be written as a quoted string, in
+  either quote form. The base64 alphabet (`A-Za-z0-9+/=`) lies almost entirely
+  outside the bare-token grammar: `=`, `+`, and `/` cannot appear in a bare
+  token, and an uppercase word is not a bare type name. An unquoted base64 value
+  is an `unexpected-character` **parse error**, never a bytes literal.
+- **Bare words are still strings.** The one exception is text made only of
+  lowercase letters with no `+`, `/`, or padding, which parses as a bare word
+  per §01: `cert: abcd` is the string `abcd`, and it satisfies `type: bytes`
+  only because that text happens to be valid base64. Quote it anyway; the
+  difference between a bytes field and a str field is never the quoting.
+- **Only a string is bytes.** A bare type name is the string `bytes` (§05
+  above), and a number is a number: `cert: bytes` and `cert: 12345` are both
+  schema mismatches under `type: bytes`.
+- **Line breaks are ignored when decoding.** CR and LF are layout, not data, so
+  a value may be wrapped across lines and a `"""` block works with either
+  closer form ([§04](04-grammar.md)): a standalone closer appends a trailing
+  `\n` that decoding simply drops. This is scoped to `bytes` and to the decode
+  step only: under `type: str` a newline is always content, and no other type
+  changes meaning because of this rule. Whitespace handling is a property of
+  the declared type, never of the text.
+- **Spaces and tabs are content.** Unlike line breaks they are NOT ignored, so
+  `cert: "AQ IDBA=="` is an `invalid bytes` violation: a space in the middle of
+  a blob is a bad paste far more often than it is layout. KVD carries no digest,
+  so a silently corrupted value would otherwise verify clean.
+- **Lenient parse, strict verify.** Parse accepts any quoted string and stores
+  it verbatim (the same rule numbers follow); emit re-emits the identical text.
+  A string that is not valid base64 parses without error and is reported only
+  by `verify`, as an `invalid bytes` violation ([§06](06-errors.md)).
+- **Strict base64.** After line breaks are dropped, the remaining text decodes
+  only when its length is a multiple of 4, `=` appears only as trailing padding
+  of at most two characters, every character is in the standard alphabet, and
+  the pad bits are zero (the unused low bits of the last encoded character, per
+  RFC 4648 §3.5). The last rule is stricter than many built-in decoders, which
+  accept `AR==` for the octet `0x01`; KVD requires canonical base64 so that a
+  decoded value has one representation modulo line breaks and re-serializing it
+  is deterministic. The empty string `""` is valid base64 and decodes to zero
+  octets.
+- **Canonical output is the consumer's job.** The emitter MUST NOT re-encode,
+  re-wrap, or reformat the value ([§08](08-operations.md)), so a document is
+  byte-stable. Canonical base64 is a single unwrapped line; a consumer that
+  re-serializes decoded octets SHOULD produce that form.
+- **No schema, no bytes.** In a schema-less document a `bytes` field and a
+  `str` field are the same thing: a string. Only `type: bytes` distinguishes
+  them, and it is what makes the text meaningful as data.
+- **Constraints.** `min_len` / `max_len` count **decoded octets**, not
+  characters and not base64 characters ([§09](09-validation.md)). `min`,
+  `max`, `exclusive_min`, `exclusive_max`, and `pattern` do not apply to
+  `bytes` and are a malformed schema on it.
+- **Optionality is unchanged.** `null` and absence still require
+  `optional: true`, exactly as for any other type.
+- **Typed round-trip** maps an octet-array type (`Vec<u8>` and equivalents) to
+  and from a `bytes` field, encoding base64 in the text form
+  ([§08](08-operations.md)).
+- **Compatibility.** A 1.0 verifier MUST report `type: bytes` as
+  `unknown-type` (a malformed schema), exactly as it reports the
+  [§10](10-merge.md) `merge` and `key` descriptor keys
+  ([§08](08-operations.md)). Data written for a 1.1 schema is unchanged in
+  1.0: it is valid KVD either way, only its interpretation differs.
+
+Valid base64:
+
+```kvd
+cert: "AQIDBA=="
+empty: ""
+```
+
+Wrapped, which is the usual shape of a pasted PEM body. Both closer forms work,
+and the value is the same octets either way:
+
+```kvd
+pem: """
+  AQIDBA==
+"""
+pem_wrapped: """
+  AQID
+  BA==
+"""
+```
+
+```kvd
+# error: not valid base64 (length is not a multiple of 4)
+cert: "AQIDB"
+```
+
+```kvd
+# error: not valid base64 (non-zero discarded bits in the last character)
+cert: "AR=="
+```
+
+```kvd
+# error: not valid base64 (space is content, only line breaks are ignored)
+cert: "AQ IDBA=="
+```
+
+```kvd
+# error: unquoted base64 — a parse error, not a bytes literal
+cert: AQIDBA==
+```
 
 ### Multi-line strings
 

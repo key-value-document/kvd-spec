@@ -91,6 +91,8 @@ without a `type` key).
 | `str` | `min_len` | string length >= min_len |
 | `str` | `max_len` | string length <= max_len |
 | `str` | `pattern` | string matches the regex (full match) |
+| `bytes` | `min_len` | decoded length in octets >= min_len |
+| `bytes` | `max_len` | decoded length in octets <= max_len |
 | `list`, `dict` | `min_len` | collection length (item / entry count) >= min_len |
 | `list`, `dict` | `max_len` | collection length (item / entry count) <= max_len |
 
@@ -104,7 +106,12 @@ expression matched against the full string value (equivalent to anchoring
 the pattern with `^` and `$`). The pattern dialect is the RE2 syntax
 (backtracking-free: no look-around, no backreferences), with the matching
 semantics of the Rust `regex` crate. String length
-is counted in Unicode scalar values (characters, not bytes). An unknown
+is counted in Unicode scalar values (characters, not bytes). On `bytes`,
+`min_len` and `max_len` count **decoded octets** (§05), so they measure the
+binary value, not the base64 text: a base64 string is never mistaken for a
+length of octets. The numeric and `pattern` constraints do not apply to
+`bytes`; declaring one of them on a `bytes` type is a malformed schema.
+An unknown
 constraint key for a given type (for example `pattern` on an `int`), or a
 constraint value of the wrong shape, is a malformed schema (§08.3).
 
@@ -124,6 +131,24 @@ count:
   type: int
   validation:
     pattern: "^[0-9]+$"
+```
+
+```kvd
+# error: pattern does not apply to bytes (malformed schema)
+cert:
+  type: bytes
+  validation:
+    pattern: "^[A-Za-z0-9+/]+=*$"
+```
+
+A `bytes` length bound counts octets, so this accepts a 4-octet value whose
+base64 text is 8 characters, and rejects one that decodes to 5:
+
+```kvd
+cert:
+  type: bytes
+  validation:
+    max_len: 4
 ```
 
 ### Optionality and null

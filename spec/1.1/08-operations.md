@@ -42,13 +42,15 @@ empty string).
 
 Canonical form rules:
 
-- All string scalars are double-quoted, except the six builtin type names
-  (`int`, `float`, `bool`, `str`, `dict`, `list`), which stay bare.
+- All string scalars are double-quoted, except the seven builtin type names
+  (`int`, `float`, `bool`, `str`, `bytes`, `dict`, `list`), which stay bare.
   They are
   meaningful only in schema position (§05). A data string whose text equals one
   of these names is therefore also emitted bare, but it re-parses to an equal
   `Str` scalar, so the value round-trips.
 - Multi-line strings use `"""` blocks.
+- A `bytes`-typed value is emitted as the identical string text it parsed
+  from: the emitter MUST NOT re-encode, re-wrap, or reformat base64 (§05).
 - Keys are emitted bare when they satisfy the key grammar (§03); otherwise
   they are double-quoted so they round-trip (for example
   `"app.kubernetes.io/name"`).
@@ -76,7 +78,8 @@ it is `ParseDoc` / `ParseSchema`. Once both parse, a *malformed schema* (for exa
   schema list with anything but exactly one element type) is reported as
   `VerifyError::SchemaMalformed`. A 1.0 verifier MUST report the §10 `merge`
   and `key` descriptor keys as unknown (malformed schema); they become valid
-  only under the future merge operation.
+  only under the future merge operation. The same applies to `type: bytes`,
+  which is valid from 1.1 (§05) and an unknown type to a 1.0 verifier.
 This is distinct from `VerifyError::Violations`, which covers a well-formed schema
 applied to a non-conforming document.
 
@@ -88,7 +91,10 @@ path checks:
 
 - Outside dict values, the data has no keys absent from the schema.
 - All required schema keys are present in the data.
-- Each scalar's shape matches its declared builtin type.
+- Each scalar's shape matches its declared builtin type. For `bytes`, the shape
+  check includes decoding the value's text ([§05](05-values.md)): text that is
+  not valid padded base64 fails the shape check and is reported as an
+  `invalid bytes` violation, not as a constraint failure.
 - `null` only appears under an optional type (`optional: true`); a `null`
   under a required type is a violation before any constraint check.
 - Each present non-`null` value satisfies its `validation` constraints, if any
@@ -109,7 +115,10 @@ implementation-defined but MUST name the failed rule.
 This operation is composed from the primitives above: serialize builds a node
 tree from `T`, then emits it; deserialize parses the text into a node tree,
 then maps it onto `T`. Shape enforcement is strict and allows no coercion between
-shapes (for example an integer field rejects a quoted-string value).
+shapes (for example an integer field rejects a quoted-string value). One
+declared exception carries no coercion: an octet-array type such as `Vec<u8>`
+serializes as a `bytes` field and deserializes from it, base64 in the text form
+(§05).
 
 This operation is optional for implementations that do not support a type
 system or reflection layer.

@@ -235,7 +235,7 @@ retries: null
 
 ### 8. Schemas and validation
 
-A schema defines the allowed keys and value types using type names (`str`, `int`, `bool`, `float`, `dict`, `list`):
+A schema defines the allowed keys and value types using type names (`str`, `int`, `bool`, `float`, `bytes`, `dict`, `list`):
 
 ```kvd
 server:
@@ -288,6 +288,26 @@ metrics:
 ```
 
 See [Validation constraints](spec/1.1/09-validation.md) for the full list.
+
+Binary data (`bytes`, new in 1.1) has no literal form: it is a base64 string in
+the document plus a `type: bytes` declaration in the schema. There is no `b"..."`
+or `0x...` spelling, so the value syntax stays closed. The value is always
+quoted; line breaks inside it are ignored, so a wrapped or pasted PEM body works,
+but a space or tab is content and invalidates the value.
+
+```kvd
+tls:
+  cert:
+    type: bytes
+    validation:
+      max_len: 4096
+  key:
+    type: bytes
+    optional: true
+```
+
+See [Binary data](spec/1.1/05-values.md) for the decoding rules and the
+`min_len`/`max_len` semantics.
 
 ### 9. Advanced nesting
 

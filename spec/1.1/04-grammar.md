@@ -85,12 +85,14 @@ builtin type name, a descriptor block, a single-element list declaring its
 item type, a dict of any number of entries declaring per-key value types,
 or the empty literals `{}` / `[]`. A bare `dict`/`list` leaf is a malformed
 schema (use a `type: dict`/`type: list` descriptor or a `{}`/`[]` leaf).
-The builtin type names are `int`, `float`, `bool`, `str`, `dict`,
+The builtin type names are `int`, `float`, `bool`, `str`, `bytes`, `dict`,
 `list`; `dict` and `list` appear only inside a descriptor's `type` key (they make a
 container optional/validatable). Numbers, booleans, `null`, and quoted
 strings are malformed-schema errors in schema position. A type name is
 written bare; optionality is declared with `optional: true` in a descriptor
-block. See [§05](05-values.md).
+block. `bytes` is a type name only: it has no token in the data grammar, and
+a `bytes`-typed key holds a quoted string holding base64 text (§05). See
+[§05](05-values.md).
 
 ### Structural rules
 

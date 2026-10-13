@@ -64,6 +64,45 @@ fn section7_example_verifies() {
         .unwrap_or_else(|e| panic!("section 7 data does not satisfy its schema: {e}"));
 }
 
+
+/// §05: `bytes` is schema-level only. The parser must see a bytes field as an
+/// ordinary string and the emitter must reproduce its base64 text verbatim.
+#[test]
+fn bytes_field_is_a_string_until_verified() {
+    let doc = "cert: \"AQIDBA==\"\nempty: \"\"\n";
+    let node = from_str(doc).expect("bytes field parses as a string");
+    assert_eq!(
+        to_string(&node).expect("bytes field emits"),
+        doc,
+        "a bytes value must round-trip as the identical string"
+    );
+}
+
+/// §05: base64 must be quoted; `=`, `+`, and `/` are not valid in a bare token,
+/// so an unquoted value is a parse error rather than a bytes literal.
+#[test]
+fn unquoted_base64_is_a_parse_error() {
+    for src in ["cert: AQIDBA==\n", "cert: AQID\n", "cert: ab+c\n"] {
+        assert!(
+            from_str(src).is_err(),
+            "{src:?} must not parse: bytes values are always quoted"
+        );
+    }
+}
+
+/// §05: line breaks in a wrapped `"""` block are layout, not content. The block
+/// parses and is emitted unchanged; only `verify` drops the newlines.
+#[test]
+fn wrapped_base64_block_is_byte_stable() {
+    let doc = "pem: \"\"\"\n  AQID\n  BA==\n\"\"\"\n";
+    let node = from_str(doc).expect("a wrapped base64 block parses");
+    assert_eq!(
+        to_string(&node).expect("emits"),
+        doc,
+        "the emitter must not re-wrap a bytes value"
+    );
+}
+
 /// §02: `'...'` is a literal alias; emit normalizes it to `"..."`.
 #[test]
 fn single_quotes_emit_as_double_quotes() {
