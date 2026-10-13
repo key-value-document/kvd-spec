@@ -1,9 +1,10 @@
-[KVD spec](../../README.md), section 12
+[KVD spec](../../README.md), section 10
 
-# 11. Document merging (planned for 1.x)
+# 10. Document merging (planned for 1.x)
 
-**Status: planned, not in 1.0.** This section specifies a future `merge`
-operation. It is additive (a later minor version); 1.0 ships only
+**Status: planned, not implemented in any released version.** This section
+specifies a future `merge`
+operation. It is additive (a later minor version); released versions ship only
 `get` / `set` / `remove` / `remove_recursive` (§08.5). The design here is
 normative for the future operation but may be refined before implementation.
 
@@ -11,7 +12,7 @@ Like all operations, `merge` is defined by its **observable behavior on the
 KVD data model**, not by any language API. A conforming implementation in any
 language must produce identical results given identical inputs.
 
-## 11.1 Motivation
+## 10.1 Motivation
 
 Real configuration workflows stack documents by precedence. Examples are chart defaults,
 user overrides, and CLI flags (the Helm model). A single global merge policy
@@ -21,7 +22,7 @@ patching. Therefore the merge policy is declared **per-field in the schema**,
 where it belongs with the field's type, rather than passed as a parameter at
 each call site.
 
-## 11.2 Operation
+## 10.2 Operation
 
 ```text
 merge(base, overlay, schema)
@@ -45,7 +46,7 @@ doc = merge(doc, userB)
 doc = merge(doc, cliOverrides)
 ```
 
-## 11.3 Policy model
+## 10.3 Policy model
 
 Each field's merge behavior is taken from its schema descriptor's `merge`
 attribute. The descriptor already carries `type`, `optional`, `description`,
@@ -81,10 +82,10 @@ name:
 | Strategy | Applies to | Behavior |
 |---|---|---|
 | `replace` | any | Overlay value completely replaces the base value. |
-| `deep` | node subtrees and dicts | Recursively merge key-by-key (§11.4). On a non-dict value, see §11.6. |
+| `deep` | node subtrees and dicts | Recursively merge key-by-key (§10.4). On a non-dict value, see §10.6. |
 | `append` | lists | Concatenate: base elements followed by overlay elements. |
 | `union` | lists | Like `append`, then dedupe by whole-element value equality. |
-| `by-key` | lists of dicts | Match elements by `key`; deep-merge matches, keep unmatched from both sides (§11.5). |
+| `by-key` | lists of dicts | Match elements by `key`; deep-merge matches, keep unmatched from both sides (§10.5). |
 
 ### Default policy
 
@@ -94,7 +95,7 @@ merge occurs unless explicitly declared. To obtain Helm-like behavior (node
 subtree deep-merge, list replace), set `merge: deep` on the relevant node
 prefixes; lists default to `replace`, which already matches Helm.
 
-## 11.4 `deep` (nodes and dicts)
+## 10.4 `deep` (nodes and dicts)
 
 For a node subtree or dict field with `merge: deep`, merge proceeds key-by-key:
 
@@ -103,7 +104,7 @@ For a node subtree or dict field with `merge: deep`, merge proceeds key-by-key:
 - A key present in both recurses with the policy of that sub-field (looked up
   from the schema at the deeper path; falls back to the default if undeclared).
 
-## 11.5 `by-key` (lists of dicts)
+## 10.5 `by-key` (lists of dicts)
 
 For a list-of-dicts field with `merge: by-key`, the descriptor must also
 declare `key: <field>`. This is the name of the identity field within each element.
@@ -135,7 +136,7 @@ quoted (`"app.kubernetes.io/name"`); in a `Path` string it is written as a
 quoted segment (§08.5). Dotted nested paths (for example `spec.name`) are
 deferred.
 
-## 11.6 Shape and policy conflicts
+## 10.6 Shape and policy conflicts
 
 - A strategy applied to an incompatible actual shape is a
   `MergeError::ShapeMismatch` (for example `deep` on a list, `append` on a dict,
@@ -146,18 +147,18 @@ deferred.
   attribute (for example a child list under a deep node may declare `append`). A
   child's explicit strategy takes precedence over the parent's recursion.
 
-## 11.7 Errors
+## 10.7 Errors
 
 `merge` returns `MergeError`:
 
 - `SchemaMalformed`: a `merge` attribute with an unknown strategy, a `by-key`
   without `key`, a `key` on a non-`by-key` strategy, or any other invalid
   merge descriptor. Mirrors `VerifyError::SchemaMalformed` (§08.3).
-- `MissingKey`: a `by-key` element lacks the declared key field (§11.5).
-- `DuplicateKey`: duplicate key value within a single list (§11.5).
-- `ShapeMismatch`: a strategy applied to an incompatible shape (§11.6).
+- `MissingKey`: a `by-key` element lacks the declared key field (§10.5).
+- `DuplicateKey`: duplicate key value within a single list (§10.5).
+- `ShapeMismatch`: a strategy applied to an incompatible shape (§10.6).
 
-## 11.8 Resolved rules
+## 10.8 Resolved rules
 
 - **`null` in overlay deletes the base key.** Under an optional field, a
   `null` overlay value removes the key from the merged result (Helm
@@ -169,7 +170,7 @@ deferred.
   Use `replace` (the default) for fields where the overlay is meant to win
   across shapes.
 
-## 11.9 Deferred
+## 10.9 Deferred
 
 - **Nested `key` path:** `by-key` `key` is a single literal field name
-  (§11.5); nested paths (for example `spec.name`) deferred.
+  (§10.5); nested paths (for example `spec.name`) deferred.

@@ -1,6 +1,6 @@
-[KVD spec](../../README.md), section 11
+[KVD spec](../../README.md), section 09
 
-## 10. Validation constraints
+## 9. Validation constraints
 
 Status: **normative since 1.0**. The descriptor form (`type` plus `optional: true`) and the `validation` block (ranges, lengths, patterns) are both part of 1.0. A conforming verifier must enforce `validation` constraints as defined below.
 

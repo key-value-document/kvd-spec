@@ -9,7 +9,7 @@ checking parsed data against a schema. `line:col` is the offending line and
 the column where the offending token starts; for INDENT/DEDENT failures it
 is the line that required the indent change, column 1; for a missing
 terminator at EOF it is the last line's end. A `---` or `...` line is not a
-document separator (single document only, §09): its `-` is a
+document separator (single document only, §01): its `-` is a
 `bad-list-marker` and its `.` an `unexpected-character`.
 
 ### Parse errors
@@ -27,7 +27,7 @@ Produced by the parser from document text:
 | `duplicate-key` | The same key or dotted path appears twice |
 | `leaf-interior-conflict` | A path is used as both a leaf value and an interior node |
 | `bad-path` | A dotted path has an empty segment, a leading dot, or a trailing dot |
-| `unterminated` | A `"..."` string or `"""` block has no closing delimiter |
+| `unterminated` | A `"..."` string, a `'...'` literal, or a `"""` block has no closing delimiter |
 | `depth-limit` | Nesting exceeds the maximum depth (default 100) |
 | `unexpected-character` | A character or token is not valid in this position |
 
@@ -59,4 +59,4 @@ violations:
 - **unknown type**: a schema leaf names a type that is not a builtin
 - **null without optional type**: `null` appears under a non-optional type
 - **constraint**: a value violates a declared constraint
-  (range, length, or pattern); see [§10](10-validation.md)
+  (range, length, or pattern); see [§09](09-validation.md)

@@ -32,14 +32,91 @@
 
 ### Strings
 
-- String values use double quotes (`"..."`), the single-quoted literal
-  form (`'...'`, no escapes), or the multi-line block (`"""..."""`,
-  [§04](04-grammar.md)).
+There are three string forms. `"..."` is canonical; the other two are
+accepted spellings that the emitter normalizes away ([§08](08-operations.md)).
+
+| Form | Escapes | Spans lines | Emitted as |
+|---|---|---|---|
+| `"..."` | `\n` `\t` `\\` `\"` `\'` `\uXXXX` | no | `"..."` |
+| `'...'` | none, fully literal | no | `"..."` |
+| `"""..."""` | same as `"..."` | yes | `"""..."""` when the value contains a newline, otherwise `"..."` |
+| `'''...'''` | none, fully literal | yes | `"""..."""` when the value contains a newline, otherwise `"..."` |
+
+The two axes are independent: **quote character** selects escape processing,
+**quote count** selects whether the value may span lines. That gives four
+forms, and every cell is useful:
+
+| | escapes | literal |
+|---|---|---|
+| single line | `"..."` | `'...'` |
+| multi line | `"""..."""` | `'''...'''` |
+
+**Double quotes are the default.** Use them unless there is a reason not to:
+they are the only canonical form, and the only ones that can express an escape
+or multi-line text.
+
+```kvd
+message: "line one\nline two"
+escaped: "a \"quoted\" word"
+apostrophe: "it's fine"
+```
+
+**Single quotes are literal.** Everything between them is taken verbatim: no
+escape sequence is recognized, so `\` is a backslash and `\n` is the two
+characters `\` and `n`, never a newline. A `'` cannot appear inside one at all,
+since there is no way to escape it. Because the other quote character is
+ordinary text inside, single quotes are the shortest way to write a value
+containing a double quote:
+
+```kvd
+greeting: 'say "hello" without escaping'
+windows_path: 'C:\Users\no-escapes-here'
+```
+
+```kvd
+# error: unterminated — the ' in "it's" closes the string early
+owner: 'it's mine'
+```
+
+**`'''` is the multi-line literal.** It follows the same indentation and closer
+rules as `"""` ([§04](04-grammar.md)), and takes no escapes at all. Use it when
+a multi-line value contains backslashes — an embedded script, a SQL statement,
+a regular expression — which would otherwise have to be doubled:
+
+```kvd
+install: '''
+  #!/bin/sh
+  set -eu
+  cp "$SRC" C:\dest\file
+'''
+```
+
+```kvd
+# error: unterminated — single-quoted strings cannot span lines
+note: 'first
+second'
+```
+
+Both forms are accepted wherever a string is: values, list items, quoted key
+segments, and dict entry keys. The other quote character is always ordinary
+text, so `"it's"`, `'say "hi"'`, and a `'''` block containing `"""` are all
+valid:
+
+```kvd
+labels:
+  = 'app.kubernetes.io/name': "it's quoted"
+```
+
 - Non-ASCII characters in strings may be written literally or escaped as
   `\uXXXX` (Unicode code points U+0000 to U+FFFF). Code points above U+FFFF
   have no escape and MUST be written literally as UTF-8; there is no
   surrogate-pair escape. Surrogate escapes (`\ud800` to `\udfff`) are always
   errors.
+- Inside any quoted form, `#` is ordinary text and does not start a comment,
+  and a tab is ordinary text rather than an indentation error.
+- Inside a `"""` block the escapes above apply, so a backslash in embedded
+  script or SQL must be doubled ([§04](04-grammar.md)). A `'''` block takes no
+  escapes, so it never needs doubling.
 
 ### Numbers
 

@@ -16,7 +16,7 @@ Shape typing uses a closed, predictable set. Nothing else is coerced:
 | `0.75`, `1e3`, `-5.5`             | float    |
 | `true` / `false`                  | bool     |
 | `"..."`, `'...'`                  | string   |
-| `"""..."""` block                 | string   |
+| `"""..."""`, `'''...'''` blocks     | string   |
 | `null`                            | null     |
 | `{}`                              | empty dict |
 | `[]`                              | empty list |
@@ -24,8 +24,8 @@ Shape typing uses a closed, predictable set. Nothing else is coerced:
 | `-` items                        | list     |
 | `=` entries                      | dict     |
 
-All string values are double-quoted, single-quoted literal, or the `"""`
-block form. The only bare (unquoted) tokens permitted in value position
+All string values are double-quoted, single-quoted literal, or one of the two
+multi-line block forms. The only bare (unquoted) tokens permitted in value position
 are: `true`, `false`, `null`, integer and float literals, `{}`, `[]`, and
 type names matching the `type` grammar (`[a-z][a-z0-9_-]*`). Type names are
 meaningful only in schema documents; in data documents they parse as strings.
@@ -109,13 +109,13 @@ port: null
 ### Schemas and types
 
 Types are declared in a schema, never inline. The builtin type set is closed:
-`int`, `float`, `bool`, `str`, `dict`, `list`. There are no custom types. The
-first four are scalar types; `dict` and `list` are container types and may
+`int`, `float`, `bool`, `str`, `dict`, `list`. There are no custom
+types. The first four are scalar types; `dict` and `list` are container types and may
 appear only as the `type` of a descriptor. They give a dict or list an
 `optional`, `description`, `deprecated`, or `validation` slot (see below).
 
 Type names are bare (unquoted) words in schema position only. A name that is
-not one of the six builtins is an `unknown-type` error at verification time,
+not one of the seven builtins is an `unknown-type` error at verification time,
 reported as a malformed schema (§08.3).
 
 Verification is a separate pass over a parsed document; the parser itself is
@@ -205,7 +205,7 @@ port: port
 ```
 
 Optional per-value constraints such as numeric ranges, string/list lengths, and
-regular-expression patterns are described in [§10](10-validation.md).
+regular-expression patterns are described in [§09](09-validation.md).
 
 ### Multi-line strings
 

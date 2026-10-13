@@ -94,7 +94,7 @@ outer:
     = "d2": 4
 ```
 
-Nesting composes without limit except the depth cap in §02. Nested levels are spelled with exactly 2 spaces per level, so structure is always visible and unambiguous. Tabs are illegal outside quoted strings, which are single-quoted literals, double-quoted strings, and `"""` blocks.
+Nesting composes without limit except the depth cap in §02. Nested levels are spelled with exactly 2 spaces per level, so structure is always visible and unambiguous. Tabs are illegal outside quoted strings, which are single-quoted literals, double-quoted strings, and the `"""` / `'''` blocks.
 
 ### Schemas are separate
 
