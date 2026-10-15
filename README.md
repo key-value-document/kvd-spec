@@ -24,11 +24,19 @@
 
 ## Why KVD?
 
-- **Single entry model:** each entry is a `key: value` pair. Dotted paths address fixed structure, `-` builds lists, `=` builds dicts.
-- **No implicit coercion:** numbers, booleans, and `null` stand alone. Everything else is quoted text. Dates, `yes`/`no`, and versions never silently change type.
-- **Closed shape set:** scalars, lists, and dicts only.
-- **Built-in validation:** schemas are written in KVD and support optional keys, ranges, lengths, and patterns.
-- **Tested examples:** every example in this repository is parsed by CI against the reference implementation.
+YAML is readable but ambiguous: is `2026-08-20` a date or a string? Is `yes` a boolean or text? KVD keeps the same `key: value` readability and removes the guessing.
+
+Every entry is a `key: value` pair. Dotted paths address fixed structure, `-` builds lists, and `=` builds dicts. Flat and nested spellings are equivalent, so the same document can be written either way without changing its meaning.
+
+KVD values are explicit. Numbers, booleans, and `null` stand alone, and everything else is quoted text. A bare date, a hex number, or `Yes` is a parse error, never a silent type change, so a value can never mean something different from what you wrote.
+
+The shape set is closed: a value is a scalar, a list, or a dict. KVD has no anchors, aliases, merge keys, tags, directives, flow collections, or multi-document streams, so there is no hidden machinery behind the syntax.
+
+The canonical form is deterministic: equal documents emit byte-identical text and round-trip cleanly, so regenerated files diff clean.
+
+Schemas are written in KVD themselves and support optional keys, ranges, lengths, and patterns, so validation lives in the same format as the data.
+
+Finally, every example in this repository is parsed by CI against the reference implementation, so the specification and the examples cannot drift apart.
 
 ## Quick start
 
