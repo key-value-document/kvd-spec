@@ -130,7 +130,9 @@ Rules:
 | `true`, `false`     | boolean                  |
 | `null`              | no value (see below)     |
 | `"hello"`           | text                     |
+| `'hello'`           | text, taken literally (no escapes) |
 | `"""` ... `"""`     | text spanning many lines |
+| `'''` ... `'''`     | literal text spanning many lines |
 | `{}`                | an empty dict            |
 | `[]`                | an empty list            |
 
@@ -143,6 +145,39 @@ when: "2026-08-20"
 flag: "yes"
 version: "1.10"
 ```
+
+**Double or single quotes?** Two independent axes: the quote character picks
+whether escapes are processed, and the quote count picks whether the value may
+span lines. Double is canonical and the default; single is fully literal.
+Emitting a document always writes double quotes.
+
+| | escapes | literal |
+|---|---|---|
+| single line | `"..."` | `'...'` |
+| multi line | `"""..."""` | `'''...'''` |
+
+```kvd
+greeting: 'say "hello"'      # single: literal, nothing to escape
+apostrophe: "it's fine"       # double: a ' needs no escape either
+newline: "one\ntwo"          # double: escapes are processed here
+path: 'C:\Users\me'          # single: backslashes stay exactly as written
+```
+
+Inside `"""` a backslash must be doubled; inside `'''` it never is, which makes
+`'''` the right form for an embedded script or a SQL statement:
+
+```kvd
+script: '''
+  #!/bin/sh
+  set -eu
+  cp "$SRC" C:\dest\file
+'''
+```
+
+Two rules to know about single quotes: there is **no** way to put a `'` inside
+`'...'`, and `'''` blocks follow the same indentation and closer rules as `"""`.
+Inside any quoted form, `#` is ordinary text rather than a comment, and a tab is
+ordinary text rather than an indentation error.
 
 ### 4. Lists
 
@@ -180,7 +215,7 @@ greeting: """
 """
 ```
 
-Trailing newline rule: a closer alone on its line keeps a trailing newline; a closer at the end of the last content line does not. See [Grammar](spec/1.0.0/04-grammar.md) for the exact rule.
+Trailing newline rule: a closer alone on its line keeps a trailing newline; a closer at the end of the last content line does not. See [Grammar](spec/1.1/04-grammar.md) for the exact rule.
 
 ### 7. Comments, empty collections, and null
 
@@ -208,7 +243,7 @@ retries: null
 
 ### 8. Schemas and validation
 
-A schema defines the allowed keys and value types using type names (`str`, `int`, `bool`, `float`, `dict`, `list`):
+A schema defines the allowed keys and value types using type names (`str`, `int`, `bool`, `float`, `bytes`, `dict`, `list`):
 
 ```kvd
 server:
@@ -260,7 +295,27 @@ metrics:
   = "a.b.c/name": float
 ```
 
-See [Validation constraints](spec/1.0.0/10-validation.md) for the full list.
+See [Validation constraints](spec/1.1/09-validation.md) for the full list.
+
+Binary data (`bytes`, new in 1.1) has no literal form: it is a base64 string in
+the document plus a `type: bytes` declaration in the schema. There is no `b"..."`
+or `0x...` spelling, so the value syntax stays closed. The value is always
+quoted; line breaks inside it are ignored, so a wrapped or pasted PEM body works,
+but a space or tab is content and invalidates the value.
+
+```kvd
+tls:
+  cert:
+    type: bytes
+    validation:
+      max_len: 4096
+  key:
+    type: bytes
+    optional: true
+```
+
+See [Binary data](spec/1.1/05-values.md) for the decoding rules and the
+`min_len`/`max_len` semantics.
 
 ### 9. Advanced nesting
 
@@ -315,23 +370,22 @@ items:
 
 ## Normative specification
 
-The Guide above is non-normative. The normative documents are in `spec/1.0.0/`:
+The Guide above is non-normative. The normative documents are in `spec/1.1/`:
 
 | # | Document | Covers |
 | --- | ---------- | -------- |
-| 1 | [Design principles](spec/1.0.0/01-design.md) | Closed shape set, no implicit coercion |
-| 2 | [Lexical rules](spec/1.0.0/02-lexical.md) | Encoding, indentation, comments, keys, strings, numbers |
-| 3 | [Tokens](spec/1.0.0/03-tokens.md) | Token grammar |
-| 4 | [Grammar](spec/1.0.0/04-grammar.md) | EBNF, schema documents, structural rules |
-| 5 | [Values and types](spec/1.0.0/05-values.md) | Shape typing, schemas, multi-line strings |
-| 6 | [Error model](spec/1.0.0/06-errors.md) | Error categories |
-| 7 | [Full example](spec/1.0.0/07-example.md) | A data document with its companion schema |
-| 8 | [Operations](spec/1.0.0/08-operations.md) | Parse, emit, verify, typed round-trip, programmatic editing |
-| 9 | [Non-goals](spec/1.0.0/09-non-goals.md) | Features permanently out of scope |
-| 10 | [Validation constraints](spec/1.0.0/10-validation.md) | Ranges, lengths, patterns |
-| 11 | [Document merging](spec/1.0.0/11-merge.md) | Per-field merge policy (planned for 1.x) |
+| 1 | [Design principles](spec/1.1/01-design.md) | Closed shape set, no implicit coercion |
+| 2 | [Lexical rules](spec/1.1/02-lexical.md) | Encoding, indentation, comments, keys, strings, numbers |
+| 3 | [Tokens](spec/1.1/03-tokens.md) | Token grammar |
+| 4 | [Grammar](spec/1.1/04-grammar.md) | EBNF, schema documents, structural rules |
+| 5 | [Values and types](spec/1.1/05-values.md) | Shape typing, schemas, multi-line strings |
+| 6 | [Error model](spec/1.1/06-errors.md) | Error categories |
+| 7 | [Full example](spec/1.1/07-example.md) | A data document with its companion schema |
+| 8 | [Operations](spec/1.1/08-operations.md) | Parse, emit, verify, typed round-trip, programmatic editing |
+| 9 | [Validation constraints](spec/1.1/09-validation.md) | Ranges, lengths, patterns |
+| 10 | [Document merging](spec/1.1/10-merge.md) | Per-field merge policy (planned for 1.x) |
 
-For data and schema side by side, see [Full example](spec/1.0.0/07-example.md).
+For data and schema side by side, see [Full example](spec/1.1/07-example.md).
 
 ## Using KVD
 
@@ -341,10 +395,16 @@ Repository layout:
 
 ```text
 README.md        This guide
-spec/1.0.0/      Normative documents 01-11
+spec/1.1/        Normative documents 01-10
 tests/           Drift guard: every spec example must parse
 src/lib.rs       Empty crate target so cargo test runs
 ```
+
+The spec directory is named for the format version and carries major and minor
+only. Patch releases change nothing about what is valid, so they do not get a
+directory: a `spec/1.1/` document set is the current one until the next minor.
+The crate in `Cargo.toml` keeps a full SemVer `major.minor.patch`, which Cargo
+requires.
 
 Run the drift guard locally:
 

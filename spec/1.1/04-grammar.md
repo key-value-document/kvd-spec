@@ -16,6 +16,7 @@ keyseg    := key | dquote | squote
 
 value     := ' ' scalar
            | ' ' '"""' NL triple      ; triple-quoted string (see below)
+           | " ' '''" NL sqtriple    ; multi-line literal (see below)
            | NL INDENT pairs DEDENT   ; nested node prefixes
            | NL INDENT items DEDENT   ; list
            | NL INDENT entries DEDENT ; dict
@@ -26,11 +27,12 @@ scalar    := int | float
            | squote
            | empty-map | empty-list
            | type                     ; bare type name: meaningful in schema,
-                                      ; plain string in data (§05)
+                                       ; plain string in data (§05)
 
 items     := item (NL item)*
 item      := '- ' scalar
            | '- ' '"""' NL triple     ; triple-quoted string as list item
+           | "- ' '''" NL sqtriple    ; multi-line literal as list item
            | '- ' pair                 ; inline first path of a list item
            | '- ' entry                ; inline first dict entry of a list item
            | '- ' items               ; compact nested list  (- - "x")
@@ -44,9 +46,13 @@ entry     := '= ' dkey ':' value
 dkey      := dquote | squote           ; opaque dict key: dots never split
 
 triple    := content-line* closer
+sqtriple  := sq-line* closer-sq
 content-line := any line that is not the closer (escapes per `"..."`)
+sq-line   := any line that is not the `'''` closer (verbatim, no escapes)
 closer    := SP{keycol} '"""' NL          ; standalone: trailing \n included
            | content-line '"""' NL        ; inline: no trailing \n
+closer-sq := SP{keycol} "'''" NL          ; standalone: trailing \n included
+           | sq-line "'''" NL             ; inline: no trailing \n
 ```
 
 `SP{keycol}` is the exact run of spaces ending at the key's column (for a
@@ -79,12 +85,14 @@ builtin type name, a descriptor block, a single-element list declaring its
 item type, a dict of any number of entries declaring per-key value types,
 or the empty literals `{}` / `[]`. A bare `dict`/`list` leaf is a malformed
 schema (use a `type: dict`/`type: list` descriptor or a `{}`/`[]` leaf).
-The builtin type names are `int`, `float`, `bool`, `str`, `dict`, `list`;
-`dict` and `list` appear only inside a descriptor's `type` key (they make a
+The builtin type names are `int`, `float`, `bool`, `str`, `bytes`, `dict`,
+`list`; `dict` and `list` appear only inside a descriptor's `type` key (they make a
 container optional/validatable). Numbers, booleans, `null`, and quoted
 strings are malformed-schema errors in schema position. A type name is
 written bare; optionality is declared with `optional: true` in a descriptor
-block. See [§05](05-values.md).
+block. `bytes` is a type name only: it has no token in the data grammar, and
+a `bytes`-typed key holds a quoted string holding base64 text (§05). See
+[§05](05-values.md).
 
 ### Structural rules
 
@@ -128,9 +136,13 @@ endpoints:
 
 ### Multi-line strings
 
-`"""` is the only multi-line string form. The opener MUST be followed by a
-newline (inline `"""x"""` is an `unexpected-character` error); content lines
-MUST be indented at least two columns past the key's column.
+There are two multi-line forms, `"""` and `'''`, differing only in escape
+processing. Everything else — the opener, the indentation, the two closer
+forms, and the common-indent rule — is identical, and is specified once here.
+
+The opener MUST be followed by a newline (inline `"""x"""` is an
+`unexpected-character` error, and so is `'''x'''`); content lines MUST be
+indented at least two columns past the key's column.
 
 ```kvd
 key: """
@@ -139,13 +151,13 @@ key: """
 """
 ```
 
-Two closer forms exist. The position of `"""` controls whether a trailing newline
-is included:
+Two closer forms exist for each delimiter. The position of the closer controls
+whether a trailing newline is included:
 
-- **Standalone closer**: `"""` alone on a line at exactly the key's column.
-  The string includes a trailing `\n`. Any other indentation is a
+- **Standalone closer**: `"""` (or `'''`) alone on a line at exactly the key's
+  column. The string includes a trailing `\n`. Any other indentation is a
   `bad-indent` error.
-- **Inline closer**: `"""` appended directly to the last content line.
+- **Inline closer**: the delimiter appended directly to the last content line.
   No trailing `\n` is added.
 
 ```kvd
@@ -167,9 +179,27 @@ The common indentation of non-blank content lines is stripped: the parser
 MUST compute the longest common space prefix of the non-blank content lines
 (at least the opener's content indent) and remove it. Blank lines
 are kept as empty lines and excluded from the common-indent computation.
-Escapes are processed per line (same rules as `"..."`). Because `"""` is
-escape-processed, backslashes in embedded scripts or SQL must be doubled
-(`\\`), and `\n` in content becomes a newline.
+
+Inside `"""`, escapes are processed per line (same rules as `"..."`):
+`\n` in content becomes a newline, so backslashes in embedded scripts or SQL
+must be doubled (`\\`). Inside `'''`, **no escape is processed** — a backslash
+is a backslash, which is what makes the literal form the right choice for a
+script, a SQL statement, or a regular expression:
+
+```kvd
+# standalone `'''`: value is "#!/bin/sh\nset -eu\n"
+script: '''
+  #!/bin/sh
+  set -eu
+'''
+```
+
+```kvd
+# inline `'''`: value is "a\tb\n" with no escape processing at all
+literal: '''
+  a\tb
+  C:\dest\file'''
+```
 
 The same form works as a list item; the closer sits at the marker's column:
 
@@ -180,6 +210,10 @@ hooks:
     set -e
     """
   - "plain"
+  - '''
+    #!/bin/sh
+    set -eu
+    '''
 ```
 
 ### Nesting combinations

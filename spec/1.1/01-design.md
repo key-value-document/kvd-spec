@@ -14,7 +14,7 @@ name: "hello"
 debug: true
 ```
 
-Values come from a closed shape set, and the parser never coerces text from one shape into another. Date-like and other non-shape bare tokens are errors: `2026-08-20`, `0x1f`, `1_000.5`, and `Yes` never become strings, bools, or numbers. Only certain bare tokens are permitted in value position: integers and floats (`42`, `1_000`, `0.5`), the literals `true`, `false`, and `null`, the empty-collection literals `{}` and `[]`, and bare words matching the `type` grammar (`[a-z][a-z0-9_-]*`). Lowercase bare words parse as strings in data documents (`yes`, `on`, `port`) and never coerce to another shape. Bare type names (`int`, `float`, `bool`, `str`, `dict`, `list`) carry non-string meaning in schema position only, as defined in §05; in data documents they parse as strings. Quoting a bare token forces the string spelling.
+Values come from a closed shape set, and the parser never coerces text from one shape into another. Date-like and other non-shape bare tokens are errors: `2026-08-20`, `0x1f`, `1_000.5`, and `Yes` never become strings, bools, or numbers. Only certain bare tokens are permitted in value position: integers and floats (`42`, `1_000`, `0.5`), the literals `true`, `false`, and `null`, the empty-collection literals `{}` and `[]`, and bare words matching the `type` grammar (`[a-z][a-z0-9_-]*`). Lowercase bare words parse as strings in data documents (`yes`, `on`, `port`) and never coerce to another shape. Bare type names (`int`, `float`, `bool`, `str`, `bytes`, `dict`, `list`) carry non-string meaning in schema position only, as defined in §05; in data documents they parse as strings. Quoting a bare token forces the string spelling.
 
 A date must therefore be quoted to become a string:
 
@@ -94,7 +94,7 @@ outer:
     = "d2": 4
 ```
 
-Nesting composes without limit except the depth cap in §02. Nested levels are spelled with exactly 2 spaces per level, so structure is always visible and unambiguous. Tabs are illegal outside quoted strings, which are single-quoted literals, double-quoted strings, and `"""` blocks.
+Nesting composes without limit except the depth cap in §02. Nested levels are spelled with exactly 2 spaces per level, so structure is always visible and unambiguous. Tabs are illegal outside quoted strings, which are single-quoted literals, double-quoted strings, and the `"""` / `'''` blocks.
 
 ### Schemas are separate
 
